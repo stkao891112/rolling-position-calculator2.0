@@ -1,0 +1,515 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* ═══════════════════════════════════════════════════════
+   GLOBAL BASE — Deep Space Background
+   ═══════════════════════════════════════════════════════ */
+body {
+  background: #030712;
+  background-image:
+    radial-gradient(ellipse at 15% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 90%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+}
+
+/* ═══════════════════════════════════════════════════════
+   SCROLLBAR
+   ═══════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(3, 7, 18, 0.9); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6366f1, #8b5cf6);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #818cf8, #a78bfa); }
+
+::selection { background: rgba(99, 102, 241, 0.35); color: #fff; }
+
+/* ═══════════════════════════════════════════════════════
+   GLASSMORPHISM — Very Visible
+   ═══════════════════════════════════════════════════════ */
+.glass-card {
+  background: rgba(8, 15, 35, 0.7) !important;
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(99, 102, 241, 0.15) !important;
+  box-shadow:
+    0 0 1px rgba(99, 102, 241, 0.3),
+    0 0 15px rgba(99, 102, 241, 0.06),
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: all 0.3s ease;
+}
+.glass-card:hover {
+  border-color: rgba(99, 102, 241, 0.3) !important;
+  box-shadow:
+    0 0 2px rgba(99, 102, 241, 0.4),
+    0 0 25px rgba(99, 102, 241, 0.1),
+    0 12px 40px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.glass-panel {
+  background: rgba(6, 12, 28, 0.85) !important;
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid rgba(99, 102, 241, 0.1) !important;
+  box-shadow:
+    0 0 1px rgba(99, 102, 241, 0.2),
+    0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* ═══════════════════════════════════════════════════════
+   GLOW BORDERS — Strong & Visible
+   ═══════════════════════════════════════════════════════ */
+.glow-border-indigo {
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  box-shadow:
+    0 0 8px rgba(99, 102, 241, 0.25),
+    0 0 25px rgba(99, 102, 241, 0.08),
+    inset 0 0 8px rgba(99, 102, 241, 0.06) !important;
+}
+.glow-border-emerald {
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  box-shadow:
+    0 0 8px rgba(16, 185, 129, 0.25),
+    0 0 25px rgba(16, 185, 129, 0.08),
+    inset 0 0 8px rgba(16, 185, 129, 0.06) !important;
+}
+.glow-border-rose {
+  border-color: rgba(244, 63, 94, 0.4) !important;
+  box-shadow:
+    0 0 8px rgba(244, 63, 94, 0.25),
+    0 0 25px rgba(244, 63, 94, 0.08),
+    inset 0 0 8px rgba(244, 63, 94, 0.06) !important;
+}
+.glow-border-amber {
+  border-color: rgba(245, 158, 11, 0.5) !important;
+  box-shadow:
+    0 0 8px rgba(245, 158, 11, 0.2),
+    0 0 20px rgba(245, 158, 11, 0.06) !important;
+  animation: pulse-glow-amber 2.5s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════
+   GRADIENT TEXT — Bold & Animated
+   ═══════════════════════════════════════════════════════ */
+.gradient-text-primary {
+  background: linear-gradient(135deg, #818cf8 0%, #06b6d4 40%, #a78bfa 70%, #818cf8 100%);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.4));
+}
+
+/* ═══════════════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+   ═══════════════════════════════════════════════════════ */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow { animation: spin-slow 3s linear infinite; }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(99, 102, 241, 0.15), 0 0 15px rgba(99, 102, 241, 0.05); }
+  50% { box-shadow: 0 0 12px rgba(99, 102, 241, 0.35), 0 0 30px rgba(99, 102, 241, 0.12); }
+}
+.animate-pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+
+@keyframes pulse-glow-amber {
+  0%, 100% { box-shadow: 0 0 6px rgba(245, 158, 11, 0.1), 0 0 15px rgba(245, 158, 11, 0.04); }
+  50% { box-shadow: 0 0 12px rgba(245, 158, 11, 0.25), 0 0 25px rgba(245, 158, 11, 0.08); }
+}
+
+@keyframes pulse-glow-rose {
+  0%, 100% { box-shadow: 0 0 6px rgba(244, 63, 94, 0.15), 0 0 15px rgba(244, 63, 94, 0.05); }
+  50% { box-shadow: 0 0 12px rgba(244, 63, 94, 0.35), 0 0 30px rgba(244, 63, 94, 0.12); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes float-up {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes border-glow-rotate {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+@keyframes scan-line-horizontal {
+  0% { left: -30%; }
+  100% { left: 130%; }
+}
+
+@keyframes row-neon-pulse {
+  0%, 100% {
+    box-shadow: 0 0 18px rgba(6, 182, 212, 0.7), inset 0 0 25px rgba(6, 182, 212, 0.3), 0 0 35px rgba(99, 102, 241, 0.4);
+    border-color: rgba(6, 182, 212, 0.95) !important;
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(236, 72, 153, 0.9), inset 0 0 40px rgba(236, 72, 153, 0.4), 0 0 60px rgba(99, 102, 241, 0.7);
+    border-color: rgba(236, 72, 153, 0.95) !important;
+  }
+}
+
+.row-active-neon {
+  background: linear-gradient(90deg, rgba(6, 182, 212, 0.25) 0%, rgba(99, 102, 241, 0.28) 50%, rgba(236, 72, 153, 0.2) 100%) !important;
+  border-top: 2px solid rgba(6, 182, 212, 0.9) !important;
+  border-bottom: 2px solid rgba(6, 182, 212, 0.9) !important;
+  border-left: 6px solid #06b6d4 !important;
+  border-right: 2px solid rgba(6, 182, 212, 0.9) !important;
+  animation: row-neon-pulse 2.2s ease-in-out infinite !important;
+  position: relative;
+  z-index: 10;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CARD HOVER — Visible Float + Glow
+   ═══════════════════════════════════════════════════════ */
+.hover-float {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hover-float:hover {
+  transform: translateY(-4px);
+  border-color: rgba(99, 102, 241, 0.35) !important;
+  box-shadow:
+    0 0 10px rgba(99, 102, 241, 0.15),
+    0 12px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SHIMMER LINE — Animated bottom glow
+   ═══════════════════════════════════════════════════════ */
+.shimmer-line { position: relative; }
+.shimmer-line::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(99, 102, 241, 0.05) 15%,
+    rgba(6, 182, 212, 0.5) 50%,
+    rgba(99, 102, 241, 0.05) 85%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════════
+   INPUT FIELDS — Sci-Fi Glow on Focus
+   ═══════════════════════════════════════════════════════ */
+input[type="number"], input[type="text"], select {
+  transition: all 0.25s ease;
+}
+input[type="number"]:focus, input[type="text"]:focus {
+  border-color: rgba(99, 102, 241, 0.6) !important;
+  box-shadow:
+    0 0 0 2px rgba(99, 102, 241, 0.15),
+    0 0 20px rgba(99, 102, 241, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TABLE — Strong Visual Enhancements
+   ═══════════════════════════════════════════════════════ */
+#rolling-table tbody tr {
+  transition: all 0.2s ease;
+  position: relative;
+}
+#rolling-table tbody tr:hover {
+  background: rgba(99, 102, 241, 0.06) !important;
+  box-shadow: inset 3px 0 0 rgba(99, 102, 241, 0.6);
+}
+#rolling-table tbody tr:nth-child(even) {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+/* Table header animated glow line */
+#rolling-table thead tr {
+  position: relative;
+}
+#rolling-table thead tr::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(99, 102, 241, 0.4) 15%,
+    rgba(6, 182, 212, 0.6) 50%,
+    rgba(139, 92, 246, 0.4) 85%,
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 4s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SIDEBAR — Edge Glow Line
+   ═══════════════════════════════════════════════════════ */
+#sidebar-container { position: relative; }
+#sidebar-container::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(99, 102, 241, 0.5) 15%,
+    rgba(6, 182, 212, 0.4) 50%,
+    rgba(139, 92, 246, 0.5) 85%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ═══════════════════════════════════════════════════════
+   HEADER — Top Accent Line
+   ═══════════════════════════════════════════════════════ */
+#header-container > div {
+  position: relative;
+  overflow: hidden;
+}
+#header-container > div::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(99, 102, 241, 0.5) 25%,
+    rgba(6, 182, 212, 0.7) 50%,
+    rgba(139, 92, 246, 0.5) 75%,
+    transparent
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   STRATEGY & RISK PANELS — Top Accent
+   ═══════════════════════════════════════════════════════ */
+#strategy-settings-panel, #risk-panel {
+  position: relative;
+  overflow: hidden;
+}
+#strategy-settings-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.5), transparent);
+}
+#risk-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(244, 63, 94, 0.5), transparent);
+}
+
+/* ═══════════════════════════════════════════════════════
+   PROFIT CARD — Animated Top Border
+   ═══════════════════════════════════════════════════════ */
+#profit-highlight-card {
+  position: relative;
+  overflow: hidden;
+}
+#profit-highlight-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(16, 185, 129, 0.5),
+    rgba(6, 182, 212, 0.7),
+    rgba(99, 102, 241, 0.5),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+/* Scan-line effect inside profit card */
+#profit-highlight-card::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.03), transparent);
+  animation: scan-line-horizontal 6s linear infinite;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SUMMARY BENTO CARDS — Hover Glow & Scan Effect
+   ═══════════════════════════════════════════════════════ */
+#summary-bento-cards > div, #summary-bento-cards > button {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+#summary-bento-cards > div:hover {
+  transform: translateY(-4px);
+  border-color: rgba(99, 102, 241, 0.35) !important;
+  box-shadow:
+    0 0 10px rgba(99, 102, 241, 0.12),
+    0 12px 28px rgba(0, 0, 0, 0.4) !important;
+}
+/* Scan sweep on hover */
+#summary-bento-cards > div::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.06), transparent);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+#summary-bento-cards > div:hover::before { left: 100%; }
+
+/* ═══════════════════════════════════════════════════════
+   MODAL — Enhanced Glow
+   ═══════════════════════════════════════════════════════ */
+#save-preset-modal-content {
+  box-shadow:
+    0 0 3px rgba(99, 102, 241, 0.4),
+    0 0 40px rgba(99, 102, 241, 0.1),
+    0 25px 60px rgba(0, 0, 0, 0.7) !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TABLE CONTAINER — Scan Highlight
+   ═══════════════════════════════════════════════════════ */
+#table-container .glass-card {
+  position: relative;
+  overflow: hidden;
+}
+#table-container .glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(99, 102, 241, 0.4) 20%,
+    rgba(6, 182, 212, 0.6) 50%,
+    rgba(99, 102, 241, 0.4) 80%,
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 4s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ADD LEVEL BUTTON — Ripple Effect
+   ═══════════════════════════════════════════════════════ */
+#btn-add-level {
+  position: relative;
+  overflow: hidden;
+}
+#btn-add-level::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 0; height: 0;
+  background: rgba(99, 102, 241, 0.12);
+  border-radius: 50%;
+  transition: all 0.5s ease;
+  transform: translate(-50%, -50%);
+}
+#btn-add-level:hover::before { width: 300%; height: 300%; }
+
+/* ═══════════════════════════════════════════════════════
+   FOOTER — Gradient Border
+   ═══════════════════════════════════════════════════════ */
+#footer-copyright {
+  border-image: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.2), transparent) 1;
+}
+
+/* ═══════════════════════════════════════════════════════
+   RANGE SLIDER — Custom Sci-Fi Handle
+   ═══════════════════════════════════════════════════════ */
+input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  height: 6px;
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 3px; outline: none;
+  border: 1px solid rgba(51, 65, 85, 0.4);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: linear-gradient(135deg, #818cf8, #6366f1);
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.5), 0 0 16px rgba(99, 102, 241, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.2s ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 14px rgba(99, 102, 241, 0.7), 0 0 28px rgba(99, 102, 241, 0.25);
+}
+
+/* ═══════════════════════════════════════════════════════
+   PROFIT DISPLAY — Neon Text Glow
+   ═══════════════════════════════════════════════════════ */
+#total-profit-display {
+  text-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+}
+
+/* ROI VALUE — Neon Glow */
+#roi-value {
+  text-shadow: 0 0 12px currentColor, 0 0 24px currentColor;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ANIMATED CORNER ACCENTS on key panels
+   ═══════════════════════════════════════════════════════ */
+#strategy-settings-panel::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 40px; height: 40px;
+  border-right: 2px solid rgba(99, 102, 241, 0.3);
+  border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+  border-bottom-right-radius: 16px;
+  pointer-events: none;
+}
+
+#risk-panel::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 40px; height: 40px;
+  border-right: 2px solid rgba(244, 63, 94, 0.3);
+  border-bottom: 2px solid rgba(244, 63, 94, 0.3);
+  border-bottom-right-radius: 16px;
+  pointer-events: none;
+}

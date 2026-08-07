@@ -1,0 +1,8 @@
+{
+  "name": "加密貨幣滾倉計算機",
+  "description": "專業加密貨幣翻倍與自訂倍數滾倉盈虧計算工具，支持多幣種、槓桿調配、強平價格預估與動態風險監控。",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

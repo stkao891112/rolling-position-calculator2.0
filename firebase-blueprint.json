@@ -1,0 +1,29 @@
+{
+  "collections": {
+    "users": {
+      "schema": {
+        "uid": "string",
+        "email": "string",
+        "updatedAt": "timestamp"
+      },
+      "subcollections": {
+        "strategies": {
+          "schema": {
+            "id": "string",
+            "name": "string",
+            "timestamp": "number",
+            "rollingMode": "string",
+            "reinvestMode": "string",
+            "customMultiplier": "number",
+            "selectedPreset": "string",
+            "customCurrencyName": "string",
+            "qtyDecimals": "number",
+            "priceDecimals": "number",
+            "strategyParams": "map",
+            "levelsState": "array"
+          }
+        }
+      }
+    }
+  }
+}
