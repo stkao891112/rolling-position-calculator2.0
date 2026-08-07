@@ -104,11 +104,14 @@ export const getUserStrategies = async (userId: string): Promise<SavedStrategy[]
         qtyDecimals: data.qtyDecimals,
         priceDecimals: data.priceDecimals,
         contractType: data.contractType,
-        exchange: data.exchange,
+        exchange: data.exchange || data.strategyParams?.exchange || 'Binance',
         deductFeeFromNetProfit: data.deductFeeFromNetProfit,
         deductFeeFromPositionSizing: data.deductFeeFromPositionSizing,
         activeLevelIndex: data.activeLevelIndex !== undefined ? data.activeLevelIndex : null,
-        strategyParams: data.strategyParams,
+        strategyParams: data.strategyParams ? {
+          ...data.strategyParams,
+          exchange: data.strategyParams.exchange || data.exchange || 'Binance'
+        } : data.strategyParams,
         levelsState: data.levelsState || [],
         orderIndex: typeof data.orderIndex === 'number' ? data.orderIndex : 0,
       });

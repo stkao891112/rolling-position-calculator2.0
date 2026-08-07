@@ -75,10 +75,26 @@ export default function App() {
   const [qtyDecimals, setQtyDecimals] = useState<number>(2);
   const [priceDecimals, setPriceDecimals] = useState<number>(0);
   const [contractType, setContractType] = useState<ContractType>(ContractType.USDT_MARGINED);
-  const [selectedExchange, setSelectedExchange] = useState<string>('Binance');
-  const [customExchangeName, setCustomExchangeName] = useState<string>('');
+  const [selectedExchange, setSelectedExchange] = useState<string>(() => {
+    return localStorage.getItem('rolling_last_selected_exchange') || 'Binance';
+  });
+  const [customExchangeName, setCustomExchangeName] = useState<string>(() => {
+    return localStorage.getItem('rolling_last_custom_exchange') || '';
+  });
 
   const PRESET_EXCHANGES = ['Binance', 'OKX', 'Bybit', 'Bitget', 'MEXC', 'Hyperliquid'];
+
+  useEffect(() => {
+    if (selectedExchange) {
+      localStorage.setItem('rolling_last_selected_exchange', selectedExchange);
+    }
+  }, [selectedExchange]);
+
+  useEffect(() => {
+    if (customExchangeName !== undefined) {
+      localStorage.setItem('rolling_last_custom_exchange', customExchangeName);
+    }
+  }, [customExchangeName]);
 
   // 3. Strategy parameters state
   const [strategyParams, setStrategyParams] = useState<StrategyParams>({
@@ -416,7 +432,7 @@ export default function App() {
     setQtyDecimals(strategy.qtyDecimals);
     setPriceDecimals(strategy.priceDecimals);
     setContractType(strategy.contractType || ContractType.USDT_MARGINED);
-    const ex = strategy.exchange || 'Binance';
+    const ex = strategy.exchange || strategy.strategyParams?.exchange || 'Binance';
     if (PRESET_EXCHANGES.includes(ex)) {
       setSelectedExchange(ex);
     } else {
