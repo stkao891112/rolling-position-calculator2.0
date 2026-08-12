@@ -573,6 +573,44 @@ export default function App() {
     return `${basePrefix}${count}`;
   };
 
+  const handleExchangeChange = async (newExchange: string, customName?: string) => {
+    setSelectedExchange(newExchange);
+    const effectiveExchange = newExchange === 'CUSTOM' ? ((customName !== undefined ? customName : customExchangeName).trim() || '自訂交易所') : newExchange;
+    
+    setStrategyParams(prev => ({
+      ...prev,
+      exchange: effectiveExchange,
+    }));
+
+    if (currentSavedId) {
+      const updatedStrategies = savedStrategies.map(strat => {
+        if (strat.id === currentSavedId) {
+          return {
+            ...strat,
+            exchange: effectiveExchange,
+            strategyParams: {
+              ...strat.strategyParams,
+              exchange: effectiveExchange,
+            }
+          };
+        }
+        return strat;
+      });
+      setSavedStrategies(updatedStrategies);
+      localStorage.setItem('saved_rolling_strategies', JSON.stringify(updatedStrategies));
+
+      if (user) {
+        setSyncStatus('syncing');
+        try {
+          await syncAllStrategiesToFirestore(user.uid, updatedStrategies);
+          setSyncStatus('synced');
+        } catch (err) {
+          setSyncStatus('error');
+        }
+      }
+    }
+  };
+
   const handleLoadStrategy = (strategy: SavedStrategy) => {
     setRollingMode(strategy.rollingMode);
     setReinvestMode(strategy.reinvestMode);
@@ -1735,7 +1773,7 @@ export default function App() {
             {/* 幣種選擇 */}
             <div className="flex flex-col gap-1">
               <label className="text-[10px] text-slate-400 font-medium">滾倉幣種對</label>
-              <div className="flex gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+              <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 h-9">
                 <select 
                   value={selectedPreset}
                   onChange={(e) => {
@@ -1758,7 +1796,7 @@ export default function App() {
                       }
                     }
                   }}
-                  className="bg-transparent text-sm font-semibold text-slate-200 focus:outline-none px-2 py-1 pr-4 cursor-pointer shrink-0"
+                  className="bg-transparent text-xs font-bold text-slate-200 focus:outline-none px-2 py-1 cursor-pointer shrink-0"
                   id="select-preset"
                 >
                   {PRESET_CRYPTOS.map(coin => (
@@ -1781,13 +1819,36 @@ export default function App() {
               </div>
             </div>
 
-            {/* 交易所顯示與掛單按鈕 */}
+            {/* 開倉交易所下拉選單 */}
             <div className="flex flex-col gap-1">
               <label className="text-[10px] text-slate-400 font-medium">開倉交易所</label>
-              <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
-                <span className="text-xs font-bold text-indigo-400 px-2 whitespace-nowrap">
-                  {selectedExchange === 'CUSTOM' ? customExchangeName : selectedExchange}
-                </span>
+              <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 h-9">
+                <select 
+                  value={selectedExchange}
+                  onChange={(e) => handleExchangeChange(e.target.value)}
+                  className="bg-transparent text-xs font-bold text-indigo-400 focus:outline-none px-2 py-1 cursor-pointer shrink-0"
+                  id="select-exchange"
+                >
+                  {PRESET_EXCHANGES.map(exchange => (
+                    <option key={exchange} value={exchange} className="bg-[#0f172a] text-slate-200">
+                      {exchange}
+                    </option>
+                  ))}
+                  <option value="CUSTOM" className="bg-[#0f172a] text-slate-200">自訂輸入</option>
+                </select>
+                {selectedExchange === 'CUSTOM' && (
+                  <input 
+                    type="text" 
+                    value={customExchangeName}
+                    onChange={(e) => {
+                      setCustomExchangeName(e.target.value);
+                      handleExchangeChange('CUSTOM', e.target.value);
+                    }}
+                    className="bg-slate-900 border-none rounded text-xs font-mono px-2 py-1 text-indigo-400 w-20 focus:ring-1 focus:ring-indigo-500 text-center"
+                    placeholder="自訂"
+                    id="input-custom-exchange-header"
+                  />
+                )}
               </div>
             </div>
 
