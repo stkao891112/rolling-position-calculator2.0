@@ -1,49 +1,49 @@
-```
+```gitignore
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+*.out
+
 # Dependencies
 node_modules/
-
-# Build outputs
-dist/
-build/
-target/
-
-# Environment variables
+venv/
+.venv/
 .env
 .env.local
 .env.*
 
-# IDE and editor files
+# Build directories
+dist/
+build/
+target/
+*.log
+coverage/
+htmlcov/
+*.coverage
+
+# Editors and IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
 *.tmp
 
-# Logs
-*.log
-
-# Python specific
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-.coverage
-htmlcov/
-.coverage.*
-.python-version
-
-# Node.js specific
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# OS generated files
+# System files
 .DS_Store
 Thumbs.db
 
-# Compression files
+# Cache directories
+.mypy_cache/
+.pytest_cache/
+.gradle/
+
+# Compressed files
 *.zip
 *.gz
 *.tar
@@ -66,140 +66,4 @@ Thumbs.db
 *.tar.bz2
 *.tar.xz
 *.tar.zst
-
-# Coverage directory used by tools like istanbul
-coverage/
-
-# Temporary folders
-tmp/
-temp/
-
-# Local configuration files
-config.local.json
-settings.local.json
-
-# Database files
-*.db
-*.sqlite
-*.sqlite3
-
-# Compiled binary files
-*.exe
-*.dll
-*.so
-*.dylib
-*.class
-*.jar
-*.war
-*.ear
-
-# Gradle
-.gradle/
-!gradle.properties
-
-# Maven
-target/
-
-# Bazel
-bazel-*/
-
-# Zig
-zig-cache/
-zig-out/
-
-# Julia
-julia-*/
-
-# MyPy cache
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pytest cache
-.pytest_cache/
-
-# Sphinx documentation
-docs/_build/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# Vim
-*.un~
-Session.vim
-
-# Emacs
-*~
-\#*\#
-/.emacs.desktop
-/.emacs.desktop.lock
-*.elc
-auto-save-list
-tramp
-.\#*
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow
-__pypackages__/
-
-# Celery
-celerybeat-schedule
-celerybeat.pid
-
-# Sage
-*.sage.py
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Spyder
-.spyproject
-.spyderproject
-.spyproject.*
-.spyderworkspace
-
-# Rope
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# Cython debug symbols
-cython_debug/
-
-# PyCharm
-# JetBrains specific template is maintained in a separate JetBrains.gitignore that can be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-# and can be added to the global gitignore or merged into this file.  For a more nuclear option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
 ```
