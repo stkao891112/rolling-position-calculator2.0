@@ -34,7 +34,12 @@ import {
   LogOut,
   RefreshCw,
   TrendingUp as LongIcon,
-  TrendingDown as ShortIcon
+  TrendingDown as ShortIcon,
+  Settings,
+  Key,
+  ExternalLink,
+  ClipboardList,
+  AlertTriangle
 } from 'lucide-react';
 import { 
   RollingMode, 
@@ -334,6 +339,24 @@ export default function App() {
     | { type: 'RESET' }
     | null
   >(null);
+  
+  // API Key Management States
+  const [isApiSettingsOpen, setIsApiSettingsOpen] = useState(false);
+  const [apiKeys, setApiKeys] = useState<Record<string, { apiKey: string; apiSecret: string }>>(() => {
+    try {
+      const saved = localStorage.getItem('rolling_exchange_api_keys');
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      console.error('Error loading API keys', e);
+      return {};
+    }
+  });
+  
+  // Exchange Order Modal States
+  const [isExchangeOrderModalOpen, setIsExchangeOrderModalOpen] = useState(false);
+  const [selectedExchangeForOrder, setSelectedExchangeForOrder] = useState<string>('Binance');
+  const [orderLayers, setOrderLayers] = useState<number>(5);
+  const [orderDirection, setOrderDirection] = useState<'LONG' | 'SHORT'>('LONG');
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -415,6 +438,38 @@ export default function App() {
     });
     return () => unsubscribe();
   }, []);
+  
+  // Save API keys to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem('rolling_exchange_api_keys', JSON.stringify(apiKeys));
+    } catch (e) {
+      console.error('Error saving API keys', e);
+    }
+  }, [apiKeys]);
+
+  // Handle API Key update for an exchange
+  const handleUpdateApiKey = (exchange: string, apiKey: string, apiSecret: string) => {
+    setApiKeys(prev => ({
+      ...prev,
+      [exchange]: { apiKey, apiSecret }
+    }));
+    showToast(`${exchange} API 金鑰已儲存`);
+  };
+
+  // Open exchange order modal
+  const handleOpenExchangeOrderModal = (exchange: string) => {
+    setSelectedExchangeForOrder(exchange);
+    setOrderLayers(5);
+    setOrderDirection(strategyParams.direction === TradeDirection.LONG ? 'LONG' : 'SHORT');
+    setIsExchangeOrderModalOpen(true);
+  };
+
+  // Handle confirm exchange order (placeholder - no actual API call)
+  const handleConfirmExchangeOrder = () => {
+    showToast(`測試版：已預覽 ${selectedExchangeForOrder} ${orderDirection} ${orderLayers}層 委託單（尚未對接API）`);
+    setIsExchangeOrderModalOpen(false);
+  };
 
   const generateDefaultName = (currency: string, cType: ContractType) => {
     const marginText = cType === ContractType.COIN_MARGINED ? '幣本位' : 'U本位';
@@ -1528,6 +1583,15 @@ export default function App() {
             {/* 側邊欄與儲存按鈕 */}
             <div className="flex items-center gap-2">
               <button
+                onClick={() => setIsApiSettingsOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 hover:text-white hover:border-slate-700 transition-all cursor-pointer"
+                title="設定交易所 API 金鑰"
+              >
+                <Settings className="w-4 h-4" />
+                <span>API 設定</span>
+              </button>
+              
+              <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                   sidebarOpen 
@@ -1636,6 +1700,24 @@ export default function App() {
                     id="input-custom-symbol"
                   />
                 )}
+              </div>
+            </div>
+
+            {/* 交易所顯示與掛單按鈕 */}
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] text-slate-400 font-medium">開倉交易所</label>
+              <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                <span className="text-xs font-bold text-indigo-400 px-2 whitespace-nowrap">
+                  {selectedExchange === 'CUSTOM' ? customExchangeName : selectedExchange}
+                </span>
+                <button
+                  onClick={() => handleOpenExchangeOrderModal(selectedExchange === 'CUSTOM' ? (customExchangeName || 'Binance') : selectedExchange)}
+                  className="flex items-center gap-1 px-2 py-1 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 rounded text-[10px] font-bold transition-all cursor-pointer border border-indigo-500/30"
+                  title="預覽並下單至交易所"
+                >
+                  <ClipboardList className="w-3 h-3" />
+                  <span className="hidden sm:inline">掛單</span>
+                </button>
               </div>
             </div>
 
@@ -2689,6 +2771,240 @@ export default function App() {
                   {editingStrategyId ? '確認修改組合' : '確認建立新組合'}
                 </button>
               </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+
+    {/* API 金鑰設定彈窗 */}
+    <AnimatePresence>
+      {isApiSettingsOpen && (
+        <div className="fixed inset-0 top-0 left-0 w-screen h-screen z-[100] flex items-center justify-center p-4" id="api-settings-modal-overlay">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/75 backdrop-blur-sm"
+            onClick={() => setIsApiSettingsOpen(false)}
+          />
+
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ type: "spring", duration: 0.3 }}
+            className="glass-card rounded-2xl p-6 w-full max-w-2xl shadow-2xl relative z-10 my-auto max-h-[80vh] overflow-y-auto"
+            id="api-settings-modal-content"
+          >
+            <button 
+              onClick={() => setIsApiSettingsOpen(false)}
+              className="absolute top-4 right-4 p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer shrink-0"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="p-2 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg">
+                <Key className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white font-sans">
+                  交易所 API 金鑰設定
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  儲存您的交易所 API 金鑰以啟用自動掛單功能（本地儲存，不會上傳雲端）
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-amber-950/30 border border-amber-900/50 rounded-xl p-3 mb-4">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <div className="text-xs text-amber-300 space-y-1">
+                  <p className="font-bold">⚠️ 安全提醒：</p>
+                  <ul className="list-disc list-inside space-y-0.5 text-amber-200/80">
+                    <li>API 金鑰僅儲存於本地瀏覽器，不會上傳至雲端</li>
+                    <li>建議僅開啟「交易」權限，不要開啟「提幣」權限</li>
+                    <li>定期更換 API 金鑰以確保帳戶安全</li>
+                    <li>目前為測試版本，尚未對接實際交易所 API</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-2">
+              {PRESET_EXCHANGES.map(exchange => {
+                const exchangeKeys = apiKeys[exchange] || { apiKey: '', apiSecret: '' };
+                return (
+                  <div key={exchange} className="bg-slate-950/50 border border-slate-800 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                      <h4 className="text-sm font-bold text-white">{exchange}</h4>
+                      {exchangeKeys.apiKey && (
+                        <span className="text-[10px] bg-emerald-900/30 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-900/50">
+                          已設定
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-slate-400 font-medium">API Key</label>
+                        <input
+                          type="text"
+                          value={exchangeKeys.apiKey}
+                          onChange={(e) => handleUpdateApiKey(exchange, e.target.value, exchangeKeys.apiSecret)}
+                          className="w-full bg-slate-900 border border-slate-800 focus:border-indigo-500 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none font-mono"
+                          placeholder={`輸入 ${exchange} API Key`}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] text-slate-400 font-medium">API Secret</label>
+                        <input
+                          type="password"
+                          value={exchangeKeys.apiSecret}
+                          onChange={(e) => handleUpdateApiKey(exchange, exchangeKeys.apiKey, e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-800 focus:border-indigo-500 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none font-mono"
+                          placeholder={`輸入 ${exchange} API Secret`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex gap-3 pt-4 mt-4 border-t border-slate-800">
+              <button
+                onClick={() => setIsApiSettingsOpen(false)}
+                className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-900 text-slate-300 font-bold py-2.5 rounded-xl text-xs hover:text-white transition-all cursor-pointer shrink-0"
+              >
+                完成
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+
+    {/* 交易所掛單預覽彈窗 */}
+    <AnimatePresence>
+      {isExchangeOrderModalOpen && (
+        <div className="fixed inset-0 top-0 left-0 w-screen h-screen z-[100] flex items-center justify-center p-4" id="exchange-order-modal-overlay">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/75 backdrop-blur-sm"
+            onClick={() => setIsExchangeOrderModalOpen(false)}
+          />
+
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ type: "spring", duration: 0.3 }}
+            className="glass-card rounded-2xl p-6 w-full max-w-lg shadow-2xl relative z-10 my-auto"
+            id="exchange-order-modal-content"
+          >
+            <button 
+              onClick={() => setIsExchangeOrderModalOpen(false)}
+              className="absolute top-4 right-4 p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer shrink-0"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="p-2 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-lg">
+                <ClipboardList className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white font-sans">
+                  {selectedExchangeForOrder} - 條件單預覽
+                </h3>
+                <p className="text-xs text-rose-400 mt-0.5 font-bold animate-pulse">
+                  ⚠️ 測試版：目前僅供預覽，尚未對接實際 API
+                </p>
+              </div>
+            </div>
+
+            {/* 方向選擇 */}
+            <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800 mb-4">
+              <button 
+                onClick={() => setOrderDirection('LONG')}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md transition-all duration-200 text-xs font-bold ${
+                  orderDirection === 'LONG' 
+                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30' 
+                    : 'text-slate-400 hover:text-emerald-400'
+                }`}
+              >
+                <TrendingUp className="w-4 h-4" />
+                做多 LONG
+              </button>
+              <button 
+                onClick={() => setOrderDirection('SHORT')}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md transition-all duration-200 text-xs font-bold ${
+                  orderDirection === 'SHORT' 
+                    ? 'bg-rose-600 text-white shadow-lg shadow-rose-900/30' 
+                    : 'text-slate-400 hover:text-rose-400'
+                }`}
+              >
+                <TrendingDown className="w-4 h-4" />
+                做空 SHORT
+              </button>
+            </div>
+
+            {/* 層數選擇 */}
+            <div className="space-y-2 mb-4">
+              <label className="text-xs text-slate-300 font-medium">委託層數</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  min="1"
+                  max={computedLevels.length || 5}
+                  value={orderLayers}
+                  onChange={(e) => setOrderLayers(parseInt(e.target.value))}
+                  className="flex-1 h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                />
+                <span className="text-sm font-bold text-indigo-400 w-12 text-center">{orderLayers}層</span>
+              </div>
+              <p className="text-[10px] text-slate-500">總共 {computedLevels.length || 5} 層可選</p>
+            </div>
+
+            {/* 委託預覽列表 */}
+            <div className="bg-slate-950/50 border border-slate-800 rounded-xl p-3 mb-4 max-h-48 overflow-y-auto">
+              <div className="text-xs font-bold text-slate-400 mb-2 sticky top-0 bg-slate-950/90 backdrop-blur py-1">
+                委託單預覽（前 {orderLayers} 層）
+              </div>
+              <div className="space-y-1.5">
+                {computedLevels.slice(0, orderLayers).map((level, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-xs bg-slate-900/50 rounded-lg px-2 py-1.5">
+                    <span className="text-slate-400 font-mono">L{idx + 1}</span>
+                    <span className={`font-bold ${orderDirection === 'LONG' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {orderDirection === 'LONG' ? '買入' : '賣出'}
+                    </span>
+                    <span className="text-slate-300 font-mono">{level.entryPrice}</span>
+                    <span className="text-slate-500 text-[10px]">槓桿 {level.leverage}x</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 按鈕群組 */}
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setIsExchangeOrderModalOpen(false)}
+                className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-900 text-slate-300 font-bold py-2.5 rounded-xl text-xs hover:text-white transition-all cursor-pointer shrink-0"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleConfirmExchangeOrder}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-lg shadow-indigo-600/15 cursor-pointer shrink-0 flex items-center justify-center gap-2"
+              >
+                <ExternalLink className="w-4 h-4" />
+                確認送出（測試）
+              </button>
             </div>
           </motion.div>
         </div>
