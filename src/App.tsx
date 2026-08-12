@@ -358,6 +358,7 @@ export default function App() {
   const [orderLayers, setOrderLayers] = useState<number>(5);
   const [orderDirection, setOrderDirection] = useState<'LONG' | 'SHORT'>('LONG');
   const [orderType, setOrderType] = useState<'MARKET' | 'LIMIT'>('MARKET');
+  const [maxLeverage, setMaxLeverage] = useState<number>(50);
   const [orderPriceData, setOrderPriceData] = useState<Array<{
     layer: number;
     entryPrice: number;
@@ -470,6 +471,7 @@ export default function App() {
     setOrderLayers(5);
     setOrderDirection(strategyParams.direction === TradeDirection.LONG ? 'LONG' : 'SHORT');
     setOrderType('MARKET');
+    setMaxLeverage(50);
     setIsExchangeOrderModalOpen(true);
   };
 
@@ -556,9 +558,9 @@ export default function App() {
   // Handle confirm exchange order
   const handleConfirmExchangeOrder = () => {
     const orderDetails = orderPriceData.map(d => 
-      `L${d.layer}: 觸發 ${d.triggerPrice}, 委託 ${d.orderPrice}`
+      orderType === 'MARKET' ? `L${d.layer}: 觸發價 ${d.triggerPrice}` : `L${d.layer}: 觸發 ${d.triggerPrice}, 委託 ${d.orderPrice}`
     ).join('\n');
-    showToast(`測試版：已送出 ${selectedExchangeForOrder} ${orderDirection} ${orderType} ${orderLayers}層 委託單\n${orderDetails}`);
+    showToast(`測試版：已送出 ${selectedExchangeForOrder} (最大槓桿 ${maxLeverage}x) ${orderDirection} ${orderType} ${orderLayers}層 委託單\n${orderDetails}`);
     setIsExchangeOrderModalOpen(false);
   };
 
@@ -3170,6 +3172,31 @@ export default function App() {
               </div>
             </div>
 
+            {/* 最大槓桿倍數設定 */}
+            <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 mb-4 space-y-2">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <Sliders className="w-4 h-4 text-indigo-400" />
+                  <label className="text-xs font-bold text-slate-200">最大槓桿倍數</label>
+                </div>
+                <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-700 px-3 py-1 rounded-lg">
+                  <input 
+                    type="number"
+                    min="1"
+                    max="125"
+                    value={maxLeverage}
+                    onChange={(e) => setMaxLeverage(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-16 bg-transparent text-sm font-bold text-indigo-400 text-center font-mono focus:outline-none"
+                    placeholder="50"
+                  />
+                  <span className="text-xs font-bold text-slate-400">倍</span>
+                </div>
+              </div>
+              <p className="text-[11px] text-amber-300/90 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2.5 leading-relaxed">
+                💡 說明：由於可能因為滑點或手續費或是持倉過程的資金費用導致無法開到理論數量，因此建議開啟最大槓桿倍數。
+              </p>
+            </div>
+
             {/* 層數選擇 */}
             <div className="space-y-2 mb-4">
               <label className="text-xs text-slate-300 font-medium">委託層數</label>
@@ -3187,10 +3214,10 @@ export default function App() {
               <p className="text-[10px] text-slate-500">總共 {computedLevels.length || 5} 層可選</p>
             </div>
 
-            {/* 委託預覽列表 - 可編輯觸發價與委託價 */}
+            {/* 委託預覽列表 - 觸發市價單僅顯示觸發價格，觸發限價單顯示觸發價與委託價 */}
             <div className="bg-slate-950/50 border border-slate-800 rounded-xl p-4 mb-4 max-h-[40vh] overflow-y-auto">
               <div className="text-xs font-bold text-slate-400 mb-3 sticky top-0 bg-slate-950/90 backdrop-blur py-2">
-                委託單預覽（前 {orderLayers} 層）- 可點擊修改價格
+                委託單預覽（前 {orderLayers} 層）- {orderType === 'MARKET' ? '僅顯示觸發價格' : '可編輯觸發價與委託價'}
               </div>
               <div className="space-y-2">
                 {orderPriceData.map((data, idx) => (
@@ -3199,30 +3226,44 @@ export default function App() {
                     <span className={`col-span-2 font-bold ${orderDirection === 'LONG' ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {orderDirection === 'LONG' ? '買入' : '賣出'}
                     </span>
-                    <div className="col-span-3 space-y-0.5">
-                      <label className="text-[9px] text-slate-500 block">觸發價</label>
-                      <input
-                        type="number"
-                        value={data.triggerPrice}
-                        onChange={(e) => handleUpdateLayerPrice(idx, 'triggerPrice', parseFloat(e.target.value) || 0)}
-                        className="w-full bg-slate-800 border border-slate-700 focus:border-indigo-500 rounded px-2 py-1 text-xs text-slate-200 font-mono focus:outline-none"
-                      />
-                    </div>
-                    <div className="col-span-3 space-y-0.5">
-                      <label className="text-[9px] text-slate-500 block">委託價</label>
-                      <input
-                        type="number"
-                        value={data.orderPrice}
-                        onChange={(e) => handleUpdateLayerPrice(idx, 'orderPrice', parseFloat(e.target.value) || 0)}
-                        className="w-full bg-slate-800 border border-slate-700 focus:border-indigo-500 rounded px-2 py-1 text-xs text-slate-200 font-mono focus:outline-none"
-                      />
-                    </div>
+                    {orderType === 'MARKET' ? (
+                      <div className="col-span-6 space-y-0.5">
+                        <label className="text-[9px] text-slate-500 block">觸發價格</label>
+                        <input
+                          type="number"
+                          value={data.triggerPrice}
+                          onChange={(e) => handleUpdateLayerPrice(idx, 'triggerPrice', parseFloat(e.target.value) || 0)}
+                          className="w-full bg-slate-800 border border-slate-700 focus:border-indigo-500 rounded px-2 py-1 text-xs text-slate-200 font-mono focus:outline-none"
+                        />
+                      </div>
+                    ) : (
+                      <>
+                        <div className="col-span-3 space-y-0.5">
+                          <label className="text-[9px] text-slate-500 block">觸發價</label>
+                          <input
+                            type="number"
+                            value={data.triggerPrice}
+                            onChange={(e) => handleUpdateLayerPrice(idx, 'triggerPrice', parseFloat(e.target.value) || 0)}
+                            className="w-full bg-slate-800 border border-slate-700 focus:border-indigo-500 rounded px-2 py-1 text-xs text-slate-200 font-mono focus:outline-none"
+                          />
+                        </div>
+                        <div className="col-span-3 space-y-0.5">
+                          <label className="text-[9px] text-slate-500 block">委託價</label>
+                          <input
+                            type="number"
+                            value={data.orderPrice}
+                            onChange={(e) => handleUpdateLayerPrice(idx, 'orderPrice', parseFloat(e.target.value) || 0)}
+                            className="w-full bg-slate-800 border border-slate-700 focus:border-indigo-500 rounded px-2 py-1 text-xs text-slate-200 font-mono focus:outline-none"
+                          />
+                        </div>
+                      </>
+                    )}
                     <div className="col-span-2 text-right">
                       <span className="text-[10px] text-slate-500 block">槓桿</span>
                       <span className="text-xs text-slate-300 font-mono">{computedLevels[idx]?.leverage}x</span>
                     </div>
                     <div className="col-span-1 text-right">
-                      <span className="text-[10px] text-slate-500 block">本</span>
+                      <span className="text-[10px] text-slate-500 block">本金</span>
                       <span className="text-xs text-slate-300 font-mono">{computedLevels[idx]?.capital}</span>
                     </div>
                   </div>
