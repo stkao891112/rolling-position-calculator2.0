@@ -1647,8 +1647,8 @@ export default function App() {
       {/* 主要內容區 */}
       <div className="flex-1 overflow-x-hidden p-4 sm:p-6 flex flex-col min-w-0" id="main-content-container">
       {/* 頂部導航與標題 */}
-      <div className="max-w-7xl mx-auto mb-6" id="header-container">
-        <div className="flex flex-col gap-4 glass-card rounded-2xl p-4 sm:p-6 shadow-xl shadow-black/40">
+      <div className="w-full max-w-7xl mx-auto mb-6" id="header-container">
+        <div className="w-full flex flex-col gap-4 glass-card rounded-2xl p-4 sm:p-6 shadow-xl shadow-black/40">
           
 {/* 頂部標題區域 */}
           <div className="flex flex-col gap-3 w-full">
@@ -1731,7 +1731,7 @@ export default function App() {
           </div>
 
           {/* 右側幣種與小數自訂設定 - 包含側邊欄與儲存按鈕 */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-end gap-3">
             {/* 幣種選擇 */}
             <div className="flex flex-col gap-1">
               <label className="text-[10px] text-slate-400 font-medium">滾倉幣種對</label>
