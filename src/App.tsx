@@ -2692,7 +2692,6 @@ export default function App() {
       <div className="max-w-7xl mx-auto mt-12 text-center text-slate-600 text-xs border-t border-slate-900 pt-6" id="footer-copyright">
         加密貨幣滾倉計算機 © 2026 • 專業金融工具與走勢複利模擬系統
       </div>
-    </div>
 
     {/* 儲存/修改設定組合彈出視窗 */}
     <AnimatePresence>
