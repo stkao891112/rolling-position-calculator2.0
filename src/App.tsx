@@ -1557,17 +1557,18 @@ export default function App() {
       <div className="flex-1 overflow-x-hidden p-4 sm:p-6 flex flex-col min-w-0" id="main-content-container">
       {/* 頂部導航與標題 */}
       <div className="max-w-7xl mx-auto mb-6" id="header-container">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 glass-card rounded-2xl p-4 sm:p-6 shadow-xl shadow-black/40">
+        <div className="flex flex-col gap-4 glass-card rounded-2xl p-4 sm:p-6 shadow-xl shadow-black/40">
           
-          {/* 左側標題 */}
-          <div className="flex flex-col xl:flex-row xl:items-center gap-4">
-            <div className="flex items-center gap-3">
+          {/* 頂部標題區域 */}
+          <div className="flex flex-col gap-3 w-full">
+            {/* 標題單獨一行 */}
+            <div className="flex items-center gap-3 w-full">
               <div className="p-3 bg-indigo-600/15 text-indigo-400 border border-indigo-500/20 rounded-xl glow-border-indigo">
                 <Coins className="w-8 h-8 animate-pulse" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight gradient-text-primary font-sans" style={{filter: 'drop-shadow(0 0 15px rgba(99,102,241,0.4))'}}>
+                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight gradient-text-primary font-sans whitespace-nowrap" style={{filter: 'drop-shadow(0 0 15px rgba(99,102,241,0.4))'}}>
                     滾倉盈虧計算機
                   </h1>
                   <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700 font-mono">
@@ -1580,44 +1581,30 @@ export default function App() {
               </div>
             </div>
 
-            {/* 側邊欄與儲存按鈕 */}
-            <div className="flex items-center gap-2">
+            {/* API 設定與交易所掛單按鈕 - 獨立明顯的一列 */}
+            <div className="flex items-center gap-2 w-full pt-2 border-t border-slate-800/50">
               <button
                 onClick={() => setIsApiSettingsOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 hover:text-white hover:border-slate-700 transition-all cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-indigo-600/20 to-purple-600/20 text-indigo-300 border border-indigo-500/30 hover:border-indigo-400 hover:text-white transition-all cursor-pointer shadow-lg shadow-indigo-900/20"
                 title="設定交易所 API 金鑰"
               >
-                <Settings className="w-4 h-4" />
-                <span>API 設定</span>
+                <Settings className="w-5 h-5" />
+                <span>API 金鑰設定</span>
               </button>
               
               <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                  sidebarOpen 
-                    ? 'bg-indigo-600/20 text-indigo-400 border-indigo-500/30' 
-                    : 'bg-slate-900 text-slate-300 border-slate-800 hover:text-white hover:border-slate-700'
-                }`}
-                title="切換儲存設定組合側邊欄"
-                id="btn-toggle-sidebar"
+                onClick={() => handleOpenExchangeOrderModal(selectedExchange === 'CUSTOM' ? (customExchangeName || 'Binance') : selectedExchange)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-emerald-600/20 to-teal-600/20 text-emerald-300 border border-emerald-500/30 hover:border-emerald-400 hover:text-white transition-all cursor-pointer shadow-lg shadow-emerald-900/20"
+                title="建立交易所條件單"
               >
-                <Bookmark className="w-4 h-4" />
-                <span>組合側欄 ({savedStrategies.length})</span>
-              </button>
-
-              <button
-                onClick={handleQuickSave}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-lg shadow-indigo-600/20 cursor-pointer active:scale-[0.98]"
-                title="儲存當前滾倉參數組合"
-                id="btn-trigger-save-modal"
-              >
-                <Save className="w-4 h-4" />
-                <span>{currentSavedId ? '儲存當前組合' : '儲存當前設定'}</span>
+                <ClipboardList className="w-5 h-5" />
+                <span>交易所掛單</span>
               </button>
             </div>
           </div>
 
-          {/* 中間模式切換與複利模式 */}
+          {/* 功能按鈕列 */}
+          <div className="flex flex-wrap items-center justify-between gap-3 w-full">
             <div className="flex flex-wrap items-center justify-center gap-3 bg-slate-950/40 p-2 rounded-xl border border-indigo-500/10" style={{boxShadow: 'inset 0 0 20px rgba(99,102,241,0.04)'}}>
             {/* 滾倉基礎模式 */}
             <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800 gap-1">
@@ -1652,7 +1639,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* 右側幣種與小數自訂設定 */}
+          {/* 右側幣種與小數自訂設定 - 包含側邊欄與儲存按鈕 */}
           <div className="flex flex-wrap items-center gap-3">
             {/* 幣種選擇 */}
             <div className="flex flex-col gap-1">
@@ -1710,13 +1697,35 @@ export default function App() {
                 <span className="text-xs font-bold text-indigo-400 px-2 whitespace-nowrap">
                   {selectedExchange === 'CUSTOM' ? customExchangeName : selectedExchange}
                 </span>
+              </div>
+            </div>
+
+            {/* 側邊欄與儲存按鈕 */}
+            <div className="flex flex-col gap-1 justify-end">
+              <label className="text-[10px] text-slate-400 font-medium invisible">操作</label>
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={() => handleOpenExchangeOrderModal(selectedExchange === 'CUSTOM' ? (customExchangeName || 'Binance') : selectedExchange)}
-                  className="flex items-center gap-1 px-2 py-1 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 rounded text-[10px] font-bold transition-all cursor-pointer border border-indigo-500/30"
-                  title="預覽並下單至交易所"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                    sidebarOpen 
+                      ? 'bg-indigo-600/20 text-indigo-400 border-indigo-500/30' 
+                      : 'bg-slate-900 text-slate-300 border-slate-800 hover:text-white hover:border-slate-700'
+                  }`}
+                  title="切換儲存設定組合側邊欄"
+                  id="btn-toggle-sidebar"
                 >
-                  <ClipboardList className="w-3 h-3" />
-                  <span className="hidden sm:inline">掛單</span>
+                  <Bookmark className="w-4 h-4" />
+                  <span>組合側欄 ({savedStrategies.length})</span>
+                </button>
+
+                <button
+                  onClick={handleQuickSave}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-lg shadow-indigo-600/20 cursor-pointer active:scale-[0.98]"
+                  title="儲存當前滾倉參數組合"
+                  id="btn-trigger-save-modal"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>{currentSavedId ? '儲存當前組合' : '儲存當前設定'}</span>
                 </button>
               </div>
             </div>
@@ -1760,6 +1769,7 @@ export default function App() {
               <div className="text-[10px] text-rose-400 font-medium">策略總回報 (ROI)</div>
               <div className={`text-lg font-bold font-mono ${totalNetProfit >= 0 ? 'text-emerald-400' : 'text-rose-500'}`} id="roi-value">
                 {totalNetProfit >= 0 ? '+' : ''}{roundTo(finalReturnPercent, 2)}%
+              </div>
               </div>
             </div>
 
@@ -2794,7 +2804,7 @@ export default function App() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className="glass-card rounded-2xl p-6 w-full max-w-2xl shadow-2xl relative z-10 my-auto max-h-[80vh] overflow-y-auto"
+            className="glass-card rounded-2xl p-6 w-full max-w-4xl shadow-2xl relative z-10 my-auto max-h-[85vh] overflow-y-auto"
             id="api-settings-modal-content"
           >
             <button 
@@ -2904,7 +2914,7 @@ export default function App() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className="glass-card rounded-2xl p-6 w-full max-w-lg shadow-2xl relative z-10 my-auto"
+            className="glass-card rounded-2xl p-6 w-full max-w-3xl shadow-2xl relative z-10 my-auto max-h-[85vh] overflow-y-auto"
             id="exchange-order-modal-content"
           >
             <button 
