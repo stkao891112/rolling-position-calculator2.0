@@ -357,6 +357,13 @@ export default function App() {
   const [selectedExchangeForOrder, setSelectedExchangeForOrder] = useState<string>('Binance');
   const [orderLayers, setOrderLayers] = useState<number>(5);
   const [orderDirection, setOrderDirection] = useState<'LONG' | 'SHORT'>('LONG');
+  const [orderType, setOrderType] = useState<'MARKET' | 'LIMIT'>('MARKET');
+  const [orderPriceData, setOrderPriceData] = useState<Array<{
+    layer: number;
+    entryPrice: number;
+    triggerPrice: number;
+    orderPrice: number;
+  }>>([]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -462,12 +469,96 @@ export default function App() {
     setSelectedExchangeForOrder(exchange);
     setOrderLayers(5);
     setOrderDirection(strategyParams.direction === TradeDirection.LONG ? 'LONG' : 'SHORT');
+    setOrderType('MARKET');
     setIsExchangeOrderModalOpen(true);
   };
 
-  // Handle confirm exchange order (placeholder - no actual API call)
+  // Calculate order prices based on type, direction, and entry price
+  const calculateOrderPrices = (entryPrice: number, direction: 'LONG' | 'SHORT', type: 'MARKET' | 'LIMIT') => {
+    if (type === 'MARKET') {
+      return { triggerPrice: entryPrice, orderPrice: entryPrice };
+    }
+    
+    // For LIMIT orders, calculate trigger price based on direction
+    // Short: trigger below entry (e.g., 64999 for 65000 entry)
+    // Long: trigger above entry (e.g., 65001 for 65000 entry)
+    let priceStep: number;
+    
+    // Determine price step based on asset and price level
+    if (selectedPreset === 'ETH' || selectedPreset === 'SOL' || customCurrencyName.toUpperCase() === 'ETH') {
+      // ETH-like: use 0.01 step for prices around 1500-4000
+      if (entryPrice < 100) {
+        priceStep = 0.01;
+      } else if (entryPrice < 10000) {
+        priceStep = 0.01;
+      } else {
+        priceStep = 1;
+      }
+    } else if (selectedPreset === 'BTC' || customCurrencyName.toUpperCase() === 'BTC') {
+      // BTC: use 1 step for prices > 10000
+      if (entryPrice >= 10000) {
+        priceStep = 1;
+      } else if (entryPrice >= 1000) {
+        priceStep = 0.1;
+      } else {
+        priceStep = 0.01;
+      }
+    } else {
+      // Default: auto-detect based on price magnitude
+      if (entryPrice >= 10000) {
+        priceStep = 1;
+      } else if (entryPrice >= 1000) {
+        priceStep = 0.1;
+      } else if (entryPrice >= 100) {
+        priceStep = 0.01;
+      } else {
+        priceStep = 0.001;
+      }
+    }
+    
+    if (direction === 'SHORT') {
+      // Short: trigger price is slightly below entry, order at entry
+      const triggerPrice = parseFloat((entryPrice - priceStep).toFixed(2));
+      return { triggerPrice, orderPrice: entryPrice };
+    } else {
+      // Long: trigger price is slightly above entry, order at entry
+      const triggerPrice = parseFloat((entryPrice + priceStep).toFixed(2));
+      return { triggerPrice, orderPrice: entryPrice };
+    }
+  };
+
+  // Update order price data when layers, direction, or type changes
+  useEffect(() => {
+    if (computedLevels.length > 0) {
+      const newData = computedLevels.slice(0, orderLayers).map((level, idx) => {
+        const prices = calculateOrderPrices(level.entryPrice, orderDirection, orderType);
+        return {
+          layer: idx + 1,
+          entryPrice: level.entryPrice,
+          triggerPrice: prices.triggerPrice,
+          orderPrice: prices.orderPrice,
+        };
+      });
+      setOrderPriceData(newData);
+    }
+  }, [orderLayers, orderDirection, orderType, computedLevels]);
+
+  // Handle updating a specific layer prices
+  const handleUpdateLayerPrice = (layerIndex: number, field: 'triggerPrice' | 'orderPrice', value: number) => {
+    setOrderPriceData(prev => prev.map((item, idx) => {
+      if (idx === layerIndex) {
+        return { ...item, [field]: value };
+      }
+      return item;
+    }));
+  };
+
+  // Handle confirm exchange order
   const handleConfirmExchangeOrder = () => {
-    showToast(`測試版：已預覽 ${selectedExchangeForOrder} ${orderDirection} ${orderLayers}層 委託單（尚未對接API）`);
+    const orderDetails = orderPriceData.map(d => 
+      `L${d.layer}: 觸發 ${d.triggerPrice}, 委託 ${d.orderPrice}`
+    ).join('\n');
+    showToast(`測試版：已送出 ${selectedExchangeForOrder} ${orderDirection} ${orderType} ${orderLayers}層 委託單\n${orderDetails}`);
     setIsExchangeOrderModalOpen(false);
   };
 
@@ -1559,27 +1650,27 @@ export default function App() {
       <div className="max-w-7xl mx-auto mb-6" id="header-container">
         <div className="flex flex-col gap-4 glass-card rounded-2xl p-4 sm:p-6 shadow-xl shadow-black/40">
           
-          {/* 頂部標題區域 */}
+{/* 頂部標題區域 */}
           <div className="flex flex-col gap-3 w-full">
             {/* 標題單獨一行 */}
-            <div className="flex items-center gap-3 w-full">
+            <div className="flex items-center gap-3 w-full pb-2 border-b border-slate-800/50">
               <div className="p-3 bg-indigo-600/15 text-indigo-400 border border-indigo-500/20 rounded-xl glow-border-indigo">
                 <Coins className="w-8 h-8 animate-pulse" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight gradient-text-primary font-sans whitespace-nowrap" style={{filter: 'drop-shadow(0 0 15px rgba(99,102,241,0.4))'}}>
-                    滾倉盈虧計算機
-                  </h1>
-                  <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700 font-mono">
-                    Compound
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400 mt-1" style={{textShadow: '0 0 10px rgba(99,102,241,0.15)'}}>
-                  加密貨幣趨勢複利與分段加倉模擬系統
-                </p>
+              <div className="flex-1">
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight gradient-text-primary font-sans whitespace-nowrap block" style={{filter: 'drop-shadow(0 0 15px rgba(99,102,241,0.4))'}}>
+                  滾倉盈虧計算機
+                </h1>
               </div>
+              <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full border border-slate-700 font-mono shrink-0">
+                Compound
+              </span>
             </div>
+            
+            {/* 副標題單獨一行 */}
+            <p className="text-xs text-slate-400 -mt-1" style={{textShadow: '0 0 10px rgba(99,102,241,0.15)'}}>
+              加密貨幣趨勢複利與分段加倉模擬系統
+            </p>
 
             {/* API 設定與交易所掛單按鈕 - 獨立明顯的一列 */}
             <div className="flex items-center gap-2 w-full pt-2 border-t border-slate-800/50">
@@ -2914,7 +3005,7 @@ export default function App() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className="glass-card rounded-2xl p-6 w-full max-w-3xl shadow-2xl relative z-10 my-auto max-h-[85vh] overflow-y-auto"
+            className="glass-card rounded-2xl p-6 w-full max-w-5xl shadow-2xl relative z-10 my-auto max-h-[90vh] overflow-y-auto"
             id="exchange-order-modal-content"
           >
             <button 
@@ -2930,7 +3021,7 @@ export default function App() {
               </div>
               <div>
                 <h3 className="text-base font-bold text-white font-sans">
-                  {selectedExchangeForOrder} - 條件單預覽
+                  {selectedExchangeForOrder} - 條件單設定
                 </h3>
                 <p className="text-xs text-rose-400 mt-0.5 font-bold animate-pulse">
                   ⚠️ 測試版：目前僅供預覽，尚未對接實際 API
@@ -2938,30 +3029,84 @@ export default function App() {
               </div>
             </div>
 
-            {/* 方向選擇 */}
-            <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800 mb-4">
-              <button 
-                onClick={() => setOrderDirection('LONG')}
-                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md transition-all duration-200 text-xs font-bold ${
-                  orderDirection === 'LONG' 
-                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30' 
-                    : 'text-slate-400 hover:text-emerald-400'
-                }`}
-              >
-                <TrendingUp className="w-4 h-4" />
-                做多 LONG
-              </button>
-              <button 
-                onClick={() => setOrderDirection('SHORT')}
-                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md transition-all duration-200 text-xs font-bold ${
-                  orderDirection === 'SHORT' 
-                    ? 'bg-rose-600 text-white shadow-lg shadow-rose-900/30' 
-                    : 'text-slate-400 hover:text-rose-400'
-                }`}
-              >
-                <TrendingDown className="w-4 h-4" />
-                做空 SHORT
-              </button>
+            {/* 方向與類型選擇 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="text-xs text-slate-300 font-medium mb-2 block">交易方向</label>
+                <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800">
+                  <button 
+                    onClick={() => setOrderDirection('LONG')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md transition-all duration-200 text-xs font-bold ${
+                      orderDirection === 'LONG' 
+                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30' 
+                        : 'text-slate-400 hover:text-emerald-400'
+                    }`}
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    做多 LONG
+                  </button>
+                  <button 
+                    onClick={() => setOrderDirection('SHORT')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md transition-all duration-200 text-xs font-bold ${
+                      orderDirection === 'SHORT' 
+                        ? 'bg-rose-600 text-white shadow-lg shadow-rose-900/30' 
+                        : 'text-slate-400 hover:text-rose-400'
+                    }`}
+                  >
+                    <TrendingDown className="w-4 h-4" />
+                    做空 SHORT
+                  </button>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-xs text-slate-300 font-medium mb-2 block">訂單類型</label>
+                <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800">
+                  <button 
+                    onClick={() => setOrderType('MARKET')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md transition-all duration-200 text-xs font-bold ${
+                      orderType === 'MARKET' 
+                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/30' 
+                        : 'text-slate-400 hover:text-indigo-400'
+                    }`}
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    條件市價單
+                  </button>
+                  <button 
+                    onClick={() => setOrderType('LIMIT')}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md transition-all duration-200 text-xs font-bold ${
+                      orderType === 'LIMIT' 
+                        ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/30' 
+                        : 'text-slate-400 hover:text-purple-400'
+                    }`}
+                  >
+                    <Sliders className="w-4 h-4" />
+                    條件限價單
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* 說明文字 */}
+            <div className={`mb-4 p-3 rounded-xl border text-xs ${
+              orderType === 'MARKET' 
+                ? 'bg-indigo-950/30 border-indigo-900/50 text-indigo-300' 
+                : 'bg-purple-950/30 border-purple-900/50 text-purple-300'
+            }`}>
+              <div className="flex items-start gap-2">
+                <Info className="w-4 h-4 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold mb-1">
+                    {orderType === 'MARKET' ? '條件市價單說明' : '條件限價單說明'}
+                  </p>
+                  <p>
+                    {orderType === 'MARKET' 
+                      ? '觸發後以市價立即成交，確保快速執行但可能產生滑點。' 
+                      : `觸發後以指定價格掛出限價單。${orderDirection === 'SHORT' ? '做空時觸發價略低於進場價（如 65000 進場，64999 觸發，掛單 65000）' : '做多時觸發價略高於進場價（如 65000 進場，65001 觸發，掛單 65000）'}。如有小數點則自動調整（如 ETH 1500，做空 1499.99 觸發，做多 1500.01 觸發）。`}
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* 層數選擇 */}
@@ -2981,20 +3126,44 @@ export default function App() {
               <p className="text-[10px] text-slate-500">總共 {computedLevels.length || 5} 層可選</p>
             </div>
 
-            {/* 委託預覽列表 */}
-            <div className="bg-slate-950/50 border border-slate-800 rounded-xl p-3 mb-4 max-h-48 overflow-y-auto">
-              <div className="text-xs font-bold text-slate-400 mb-2 sticky top-0 bg-slate-950/90 backdrop-blur py-1">
-                委託單預覽（前 {orderLayers} 層）
+            {/* 委託預覽列表 - 可編輯觸發價與委託價 */}
+            <div className="bg-slate-950/50 border border-slate-800 rounded-xl p-4 mb-4 max-h-[40vh] overflow-y-auto">
+              <div className="text-xs font-bold text-slate-400 mb-3 sticky top-0 bg-slate-950/90 backdrop-blur py-2">
+                委託單預覽（前 {orderLayers} 層）- 可點擊修改價格
               </div>
-              <div className="space-y-1.5">
-                {computedLevels.slice(0, orderLayers).map((level, idx) => (
-                  <div key={idx} className="flex items-center justify-between text-xs bg-slate-900/50 rounded-lg px-2 py-1.5">
-                    <span className="text-slate-400 font-mono">L{idx + 1}</span>
-                    <span className={`font-bold ${orderDirection === 'LONG' ? 'text-emerald-400' : 'text-rose-400'}`}>
+              <div className="space-y-2">
+                {orderPriceData.map((data, idx) => (
+                  <div key={idx} className="grid grid-cols-12 gap-2 items-center text-xs bg-slate-900/50 rounded-lg px-3 py-2.5 hover:bg-slate-900/70 transition-all">
+                    <span className="col-span-1 text-slate-400 font-mono font-bold">L{data.layer}</span>
+                    <span className={`col-span-2 font-bold ${orderDirection === 'LONG' ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {orderDirection === 'LONG' ? '買入' : '賣出'}
                     </span>
-                    <span className="text-slate-300 font-mono">{level.entryPrice}</span>
-                    <span className="text-slate-500 text-[10px]">槓桿 {level.leverage}x</span>
+                    <div className="col-span-3 space-y-0.5">
+                      <label className="text-[9px] text-slate-500 block">觸發價</label>
+                      <input
+                        type="number"
+                        value={data.triggerPrice}
+                        onChange={(e) => handleUpdateLayerPrice(idx, 'triggerPrice', parseFloat(e.target.value) || 0)}
+                        className="w-full bg-slate-800 border border-slate-700 focus:border-indigo-500 rounded px-2 py-1 text-xs text-slate-200 font-mono focus:outline-none"
+                      />
+                    </div>
+                    <div className="col-span-3 space-y-0.5">
+                      <label className="text-[9px] text-slate-500 block">委託價</label>
+                      <input
+                        type="number"
+                        value={data.orderPrice}
+                        onChange={(e) => handleUpdateLayerPrice(idx, 'orderPrice', parseFloat(e.target.value) || 0)}
+                        className="w-full bg-slate-800 border border-slate-700 focus:border-indigo-500 rounded px-2 py-1 text-xs text-slate-200 font-mono focus:outline-none"
+                      />
+                    </div>
+                    <div className="col-span-2 text-right">
+                      <span className="text-[10px] text-slate-500 block">槓桿</span>
+                      <span className="text-xs text-slate-300 font-mono">{computedLevels[idx]?.leverage}x</span>
+                    </div>
+                    <div className="col-span-1 text-right">
+                      <span className="text-[10px] text-slate-500 block">本</span>
+                      <span className="text-xs text-slate-300 font-mono">{computedLevels[idx]?.capital}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -3004,15 +3173,15 @@ export default function App() {
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setIsExchangeOrderModalOpen(false)}
-                className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-900 text-slate-300 font-bold py-2.5 rounded-xl text-xs hover:text-white transition-all cursor-pointer shrink-0"
+                className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-900 text-slate-300 font-bold py-3 rounded-xl text-sm hover:text-white transition-all cursor-pointer shrink-0"
               >
                 取消
               </button>
               <button
                 onClick={handleConfirmExchangeOrder}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-lg shadow-indigo-600/15 cursor-pointer shrink-0 flex items-center justify-center gap-2"
+                className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-sm transition-all shadow-lg shadow-indigo-600/15 cursor-pointer shrink-0 flex items-center justify-center gap-2"
               >
-                <ExternalLink className="w-4 h-4" />
+                <ExternalLink className="w-5 h-5" />
                 確認送出（測試）
               </button>
             </div>
