@@ -971,6 +971,14 @@ export default function App() {
       }
       return copy;
     });
+    
+    // Prevent input from causing layout shift on mobile by blurring after update
+    if (window.innerWidth < 768) {
+      const activeElement = document.activeElement as HTMLElement;
+      if (activeElement && activeElement.tagName === 'INPUT') {
+        activeElement.blur();
+      }
+    }
   };
 
   // Reset/Restore specific customized field back to automatic calculation
@@ -1099,7 +1107,7 @@ export default function App() {
               </button>
               <button
                 onClick={handleGoogleSignInRedirect}
-                className="w-full text-[10px] text-center text-indigo-400 hover:text-indigo-300 transition-all mt-1 underline cursor-pointer"
+                className="w-full text-[10px] text-center text-indigo-400 hover:text-indigo-300 transition-all mt-1 underline cursor-pointer shrink-0"
               >
                 若彈出視窗被封鎖，請點此重新導向登入
               </button>
@@ -1276,7 +1284,7 @@ export default function App() {
               <p className="text-xs font-medium">沒有符合篩選條件的組合</p>
               <button
                 onClick={() => { setFilterCurrency('ALL'); setFilterExchange('ALL'); }}
-                className="text-[10px] text-indigo-400 hover:text-indigo-300 underline cursor-pointer"
+                className="text-[10px] text-indigo-400 hover:text-indigo-300 underline cursor-pointer shrink-0"
               >
                 重置篩選條件
               </button>
@@ -1395,7 +1403,7 @@ export default function App() {
                                 handleDeleteStrategy(strat.id, e);
                                 setDeleteConfirmId(null);
                               }}
-                              className="px-1.5 py-0.5 rounded bg-rose-600 hover:bg-rose-500 text-white font-bold text-[9px] transition-all cursor-pointer"
+                              className="px-1.5 py-0.5 rounded bg-rose-600 hover:bg-rose-500 text-white font-bold text-[9px] transition-all cursor-pointer shrink-0"
                             >
                               是
                             </button>
@@ -1404,7 +1412,7 @@ export default function App() {
                                 e.stopPropagation();
                                 setDeleteConfirmId(null);
                               }}
-                              className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[9px] transition-all cursor-pointer"
+                              className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[9px] transition-all cursor-pointer shrink-0"
                             >
                               否
                             </button>
@@ -1418,7 +1426,7 @@ export default function App() {
                                 handleOverwriteStrategy(strat.id);
                                 setOverwriteConfirmId(null);
                               }}
-                              className="px-1.5 py-0.5 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[9px] transition-all cursor-pointer"
+                              className="px-1.5 py-0.5 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[9px] transition-all cursor-pointer shrink-0"
                             >
                               是
                             </button>
@@ -1427,7 +1435,7 @@ export default function App() {
                                 e.stopPropagation();
                                 setOverwriteConfirmId(null);
                               }}
-                              className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[9px] transition-all cursor-pointer"
+                              className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[9px] transition-all cursor-pointer shrink-0"
                             >
                               否
                             </button>
@@ -1437,7 +1445,7 @@ export default function App() {
                             {/* 修改設定 */}
                             <button
                               onClick={(e) => handleOpenModifyModal(strat, e)}
-                              className="p-1 rounded bg-slate-900 hover:bg-indigo-950 border border-slate-800 hover:border-indigo-500/50 text-slate-400 hover:text-indigo-300 transition-all text-[10px] flex items-center gap-1 cursor-pointer"
+                              className="p-1 rounded bg-slate-900 hover:bg-indigo-950 border border-slate-800 hover:border-indigo-500/50 text-slate-400 hover:text-indigo-300 transition-all text-[10px] flex items-center gap-1 cursor-pointer shrink-0"
                               title="修改此組合設定與名稱"
                             >
                               <Edit2 className="w-3 h-3" />
@@ -1451,7 +1459,7 @@ export default function App() {
                                 setOverwriteConfirmId(strat.id);
                                 setDeleteConfirmId(null);
                               }}
-                              className="p-1 rounded bg-slate-900 hover:bg-indigo-600 border border-slate-800 hover:border-indigo-500 text-slate-400 hover:text-white transition-all text-[10px] flex items-center gap-1 cursor-pointer"
+                              className="p-1 rounded bg-slate-900 hover:bg-indigo-600 border border-slate-800 hover:border-indigo-500 text-slate-400 hover:text-white transition-all text-[10px] flex items-center gap-1 cursor-pointer shrink-0"
                               title="將當前參數覆蓋儲存至此組合"
                             >
                               <Save className="w-3 h-3" />
@@ -1465,7 +1473,7 @@ export default function App() {
                                 setDeleteConfirmId(strat.id);
                                 setOverwriteConfirmId(null);
                               }}
-                              className="p-1 rounded bg-slate-900 hover:bg-rose-950/80 border border-slate-800 hover:border-rose-900 text-slate-400 hover:text-rose-400 transition-all cursor-pointer"
+                              className="p-1 rounded bg-slate-900 hover:bg-rose-950/80 border border-slate-800 hover:border-rose-900 text-slate-400 hover:text-rose-400 transition-all cursor-pointer shrink-0"
                               title="刪除此設定組合"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -1608,7 +1616,7 @@ export default function App() {
                       }
                     }
                   }}
-                  className="bg-transparent text-sm font-semibold text-slate-200 focus:outline-none px-2 py-1 pr-4 cursor-pointer"
+                  className="bg-transparent text-sm font-semibold text-slate-200 focus:outline-none px-2 py-1 pr-4 cursor-pointer shrink-0"
                   id="select-preset"
                 >
                   {PRESET_CRYPTOS.map(coin => (
@@ -1779,7 +1787,7 @@ export default function App() {
                   placeholder="10"
                   id="input-initial-leverage"
                 />
-                <span className="absolute right-3 top-2.5 text-slate-500 text-xs">x</span>
+                <span className="absolute right-3 top-2.5 text-slate-500 text-xs shrink-0">x</span>
               </div>
             </div>
 
@@ -2050,7 +2058,7 @@ export default function App() {
       </div>
 
       {/* 滾倉級別表格 */}
-      <div className="max-w-7xl mx-auto mb-6" id="table-container">
+      <div className="max-w-7xl mx-auto mb-6 w-full" id="table-container">
         <div className="glass-card rounded-2xl overflow-hidden shadow-xl">
           
           <div className="p-4 sm:p-6 border-b border-indigo-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900/10 shimmer-line">
@@ -2070,8 +2078,8 @@ export default function App() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse" id="rolling-table">
+          <div className="overflow-x-auto overflow-y-visible" style={{WebkitOverflowScrolling: 'touch'}}>
+            <table className="w-full text-left border-collapse min-w-[1200px]" id="rolling-table">
               <thead>
                 <tr className="bg-slate-950/60 border-b border-slate-800 text-slate-400 text-xs font-semibold">
                   <th className="py-4 px-3 text-center w-16">級別</th>
@@ -2160,9 +2168,10 @@ export default function App() {
                             <div className="relative">
                               <input 
                                 type="number"
+                                inputMode="decimal"
                                 value={displayEntryPrice}
                                 onChange={(e) => handleUpdateLevel(idx, 'entryPrice', e.target.value)}
-                                className={`bg-slate-950 border rounded px-2 py-1 text-xs w-28 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono transition-colors duration-200 ${
+                                className={`bg-slate-950 border rounded px-2 py-1 text-xs w-full min-w-[7rem] focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono transition-colors duration-200 ${
                                   level.isCustomEntryPrice 
                                     ? 'border-amber-500/80 bg-amber-500/10 text-amber-300 font-bold shadow-lg shadow-amber-500/10' 
                                     : 'border-slate-800 text-slate-300 hover:border-slate-700'
@@ -2173,7 +2182,7 @@ export default function App() {
                             {level.isCustomEntryPrice && (
                               <button 
                                 onClick={() => handleResetLevelField(idx, 'entryPrice')}
-                                className="text-amber-500 hover:text-amber-400 p-1 rounded hover:bg-slate-800 transition-colors cursor-pointer"
+                                className="text-amber-500 hover:text-amber-400 p-1 rounded hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
                                 title="重置為自動計算價格"
                               >
                                 <RotateCcw className="w-3.5 h-3.5" />
@@ -2206,7 +2215,7 @@ export default function App() {
                               type="number"
                               value={displayCalcPrice}
                               onChange={(e) => handleUpdateLevel(idx, 'calcPrice', e.target.value)}
-                              className={`bg-slate-950 border rounded px-2 py-1 text-xs w-28 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono transition-colors duration-200 ${
+                              className={`bg-slate-950 border rounded px-2 py-1 text-xs w-full min-w-[7rem] focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono transition-colors duration-200 ${
                                 level.isCustomCalcPrice 
                                   ? 'border-amber-500/80 bg-amber-500/10 text-amber-300 font-bold shadow-lg shadow-amber-500/10' 
                                   : 'border-slate-800 text-slate-300 hover:border-slate-700'
@@ -2216,7 +2225,7 @@ export default function App() {
                             {level.isCustomCalcPrice && (
                               <button 
                                 onClick={() => handleResetLevelField(idx, 'calcPrice')}
-                                className="text-amber-500 hover:text-amber-400 p-1 rounded hover:bg-slate-800 transition-colors cursor-pointer"
+                                className="text-amber-500 hover:text-amber-400 p-1 rounded hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
                                 title="重置為策略預設目標價"
                               >
                                 <RotateCcw className="w-3.5 h-3.5" />
@@ -2245,7 +2254,7 @@ export default function App() {
                               step="0.01"
                               value={level.isDerivedLeverageFromPositionSize ? level.leverage : displayLeverage}
                               onChange={(e) => handleUpdateLevel(idx, 'leverage', e.target.value)}
-                              className={`bg-slate-950 border rounded px-2 py-1 text-xs text-center w-20 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono transition-colors duration-200 ${
+                              className={`bg-slate-950 border rounded px-2 py-1 text-xs text-center w-full min-w-[4rem] focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono transition-colors duration-200 ${
                                 level.isDerivedLeverageFromPositionSize
                                   ? 'border-amber-500/60 bg-amber-500/10 text-amber-300 font-bold'
                                   : level.isCustomLeverage 
@@ -2255,7 +2264,7 @@ export default function App() {
                               placeholder="槓桿"
                               title={level.isDerivedLeverageFromPositionSize ? `根據本輪加倉量 (${level.thisRoundPositionSize}) 自動反推之槓桿: ${level.leverage}x` : "槓桿倍數"}
                             />
-                            <span className="text-slate-500 text-xs">x</span>
+                            <span className="text-slate-500 text-xs shrink-0">x</span>
                             {level.isDerivedLeverageFromPositionSize && (
                               <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1 py-0.2 rounded font-bold shrink-0" title="由加倉數量反推槓桿">
                                 反推
@@ -2264,7 +2273,7 @@ export default function App() {
                             {level.isCustomLeverage && !level.isDerivedLeverageFromPositionSize && (
                               <button 
                                 onClick={() => handleResetLevelField(idx, 'leverage')}
-                                className="text-amber-500 hover:text-amber-400 p-1 rounded hover:bg-slate-800 transition-colors cursor-pointer"
+                                className="text-amber-500 hover:text-amber-400 p-1 rounded hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
                                 title="重置為自動計算槓桿"
                               >
                                 <RotateCcw className="w-3.5 h-3.5" />
@@ -2280,7 +2289,7 @@ export default function App() {
                               type="number"
                               value={displayCapital}
                               onChange={(e) => handleUpdateLevel(idx, 'capital', e.target.value)}
-                              className={`bg-slate-950 border rounded px-2 py-1 text-xs text-right w-24 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono transition-colors duration-200 ${
+                              className={`bg-slate-950 border rounded px-2 py-1 text-xs text-right w-full min-w-[6rem] focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono transition-colors duration-200 ${
                                 level.isCustomCapital 
                                   ? 'border-amber-500 bg-amber-500/10 text-amber-300 font-bold shadow-lg shadow-amber-500/10' 
                                   : 'border-slate-800 text-slate-300 hover:border-slate-700'
@@ -2290,7 +2299,7 @@ export default function App() {
                             {level.isCustomCapital && (
                               <button 
                                 onClick={() => handleResetLevelField(idx, 'capital')}
-                                className="text-amber-500 hover:text-amber-400 p-1 rounded hover:bg-slate-800 transition-colors cursor-pointer"
+                                className="text-amber-500 hover:text-amber-400 p-1 rounded hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
                                 title="還原至自動滾倉本金"
                               >
                                 <RotateCcw className="w-3.5 h-3.5" />
@@ -2308,7 +2317,7 @@ export default function App() {
                                 step={Math.pow(10, -qtyDecimals).toString()}
                                 value={displayThisRoundSize}
                                 onChange={(e) => handleUpdateLevel(idx, 'thisRoundPositionSize', e.target.value)}
-                                className={`bg-slate-950 border rounded px-2 py-1 text-xs text-right w-24 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono transition-colors duration-200 ${
+                                className={`bg-slate-950 border rounded px-2 py-1 text-xs text-right w-full min-w-[6rem] focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono transition-colors duration-200 ${
                                   level.isCustomThisRoundPositionSize 
                                     ? 'border-amber-500/80 bg-amber-500/10 text-amber-300 font-bold shadow-lg shadow-amber-500/10' 
                                     : 'border-slate-800 text-emerald-400 font-medium hover:border-slate-700'
@@ -2319,7 +2328,7 @@ export default function App() {
                             {level.isCustomThisRoundPositionSize && (
                               <button 
                                 onClick={() => handleResetLevelField(idx, 'thisRoundPositionSize')}
-                                className="text-amber-500 hover:text-amber-400 p-1 rounded hover:bg-slate-800 transition-colors cursor-pointer"
+                                className="text-amber-500 hover:text-amber-400 p-1 rounded hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
                                 title="重置為由槓桿自動計算之加倉數量"
                               >
                                 <RotateCcw className="w-3.5 h-3.5" />
@@ -2351,7 +2360,7 @@ export default function App() {
           <div className="p-4 border-t border-slate-800 text-center bg-slate-900/10">
             <button 
               onClick={handleAddLevel}
-              className="inline-flex items-center gap-2 px-6 py-3 border border-dashed border-indigo-500/50 hover:border-indigo-400 text-indigo-400 hover:text-indigo-300 rounded-xl transition-all duration-200 text-sm font-semibold cursor-pointer"
+              className="inline-flex items-center gap-2 px-6 py-3 border border-dashed border-indigo-500/50 hover:border-indigo-400 text-indigo-400 hover:text-indigo-300 rounded-xl transition-all duration-200 text-sm font-semibold cursor-pointer shrink-0"
               id="btn-add-level"
             >
               <Plus className="w-4 h-4" />
@@ -2507,7 +2516,7 @@ export default function App() {
             {/* Close Button */}
             <button 
               onClick={handleCloseSaveModal}
-              className="absolute top-4 right-4 p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer"
+              className="absolute top-4 right-4 p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer shrink-0"
             >
               <X className="w-5 h-5" />
             </button>
@@ -2647,7 +2656,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => setSaveName(generateDefaultName(customCurrencyName, contractType))}
-                    className="text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors font-mono cursor-pointer"
+                    className="text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors font-mono cursor-pointer shrink-0"
                   >
                     ⚡ 自動填入預設名稱
                   </button>
@@ -2668,14 +2677,14 @@ export default function App() {
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={handleCloseSaveModal}
-                  className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-900 text-slate-300 font-bold py-2.5 rounded-xl text-xs hover:text-white transition-all cursor-pointer"
+                  className="flex-1 border border-slate-800 hover:border-slate-700 bg-slate-900 text-slate-300 font-bold py-2.5 rounded-xl text-xs hover:text-white transition-all cursor-pointer shrink-0"
                 >
                   取消
                 </button>
                 <button
                   onClick={handleConfirmModalSave}
                   disabled={!saveName.trim()}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:pointer-events-none text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-lg shadow-indigo-600/15 cursor-pointer"
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:pointer-events-none text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-lg shadow-indigo-600/15 cursor-pointer shrink-0"
                 >
                   {editingStrategyId ? '確認修改組合' : '確認建立新組合'}
                 </button>
@@ -2707,7 +2716,7 @@ export default function App() {
           >
             <button
               onClick={() => setPendingAction(null)}
-              className="absolute top-4 right-4 p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer"
+              className="absolute top-4 right-4 p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer shrink-0"
             >
               <X className="w-5 h-5" />
             </button>
@@ -2738,7 +2747,7 @@ export default function App() {
             <div className="flex flex-col gap-2.5">
               <button
                 onClick={() => handleExecutePendingAction(true)}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 cursor-pointer shrink-0"
               >
                 <Save className="w-4 h-4" />
                 儲存並繼續
@@ -2746,14 +2755,14 @@ export default function App() {
               
               <button
                 onClick={() => setPendingAction(null)}
-                className="w-full bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold py-2.5 rounded-xl text-xs border border-slate-700 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold py-2.5 rounded-xl text-xs border border-slate-700 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
               >
                 留在原地繼續修改
               </button>
 
               <button
                 onClick={() => handleExecutePendingAction(false)}
-                className="w-full bg-rose-950/40 hover:bg-rose-900/60 border border-rose-900/60 text-rose-300 font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full bg-rose-950/40 hover:bg-rose-900/60 border border-rose-900/60 text-rose-300 font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
               >
                 不儲存組合 繼續切換
               </button>
