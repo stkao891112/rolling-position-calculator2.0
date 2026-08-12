@@ -1694,10 +1694,11 @@ export default function App() {
             </div>
           </div>
 
-          {/* 功能按鈕列 - 統一寬度 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+          {/* 功能按鈕列 */}
+          <div className="flex flex-wrap items-center justify-between gap-3 w-full">
+            <div className="flex flex-wrap items-center justify-center gap-3 bg-slate-950/40 p-2 rounded-xl border border-indigo-500/10" style={{boxShadow: 'inset 0 0 20px rgba(99,102,241,0.04)'}}>
             {/* 滾倉基礎模式 */}
-            <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800 gap-1 w-full justify-center">
+            <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800 gap-1">
               <button 
                 onClick={() => setRollingMode(RollingMode.DOUBLE)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${
@@ -1723,19 +1724,16 @@ export default function App() {
             </div>
 
             {/* 盈虧複利模式標籤 */}
-            <div className="flex items-center justify-center bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 text-xs font-semibold text-emerald-400 bg-emerald-600/10 border-emerald-500/30 gap-1.5 w-full" title="每一輪新加倉的本金會自動納入上一輪所累積的盈虧 (複利滾動)">
+            <div className="flex bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 text-xs font-semibold text-emerald-400 bg-emerald-600/10 border-emerald-500/30 items-center gap-1.5" title="每一輪新加倉的本金會自動納入上一輪所累積的盈虧 (複利滾動)">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>盈虧複利滾倉模式</span>
             </div>
-
-            {/* 空位保持對稱 */}
-            <div className="hidden md:block"></div>
           </div>
 
           {/* 右側幣種與小數自訂設定 - 包含側邊欄與儲存按鈕 */}
-          <div className="grid grid-cols-1 md:grid-cols-7 gap-3 w-full">
+          <div className="flex flex-wrap items-center gap-3">
             {/* 幣種選擇 */}
-            <div className="md:col-span-1 flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
               <label className="text-[10px] text-slate-400 font-medium">滾倉幣種對</label>
               <div className="flex gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
                 <select 
@@ -1783,36 +1781,18 @@ export default function App() {
               </div>
             </div>
 
-            {/* 交易所選擇與掛單按鈕 */}
+            {/* 交易所顯示與掛單按鈕 */}
             <div className="flex flex-col gap-1">
               <label className="text-[10px] text-slate-400 font-medium">開倉交易所</label>
-              <select 
-                value={selectedExchange}
-                onChange={(e) => setSelectedExchange(e.target.value)}
-                className="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs font-bold text-indigo-400 focus:outline-none focus:border-indigo-500/50 cursor-pointer min-w-[120px]"
-                id="select-exchange"
-              >
-                {PRESET_EXCHANGES.map(exchange => (
-                  <option key={exchange} value={exchange} className="bg-[#0f172a] text-slate-200">
-                    {exchange}
-                  </option>
-                ))}
-                <option value="CUSTOM" className="bg-[#0f172a] text-slate-200">自訂輸入</option>
-              </select>
-              {selectedExchange === 'CUSTOM' && (
-                <input 
-                  type="text" 
-                  value={customExchangeName}
-                  onChange={(e) => setCustomExchangeName(e.target.value)}
-                  className="bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-xs font-mono text-emerald-400 w-full focus:ring-1 focus:ring-indigo-500"
-                  placeholder="輸入交易所名稱"
-                  id="input-custom-exchange"
-                />
-              )}
+              <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                <span className="text-xs font-bold text-indigo-400 px-2 whitespace-nowrap">
+                  {selectedExchange === 'CUSTOM' ? customExchangeName : selectedExchange}
+                </span>
+              </div>
             </div>
 
             {/* 側邊欄與儲存按鈕 */}
-            <div className="md:col-span-2 flex flex-col gap-1 justify-end">
+            <div className="flex flex-col gap-1 justify-end">
               <label className="text-[10px] text-slate-400 font-medium invisible">操作</label>
               <div className="flex items-center gap-2">
                 <button
@@ -1842,7 +1822,7 @@ export default function App() {
             </div>
 
             {/* 持倉數量小數位數 */}
-            <div className="md:col-span-1 flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
               <label className="text-[10px] text-slate-400 font-medium">持倉小數位</label>
               <div className="flex items-center bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800 gap-1.5" title="調整持倉數量與加倉量的小數位數">
                 <input 
@@ -1859,7 +1839,7 @@ export default function App() {
             </div>
 
             {/* 價格小數位數 */}
-            <div className="md:col-span-1 flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
               <label className="text-[10px] text-slate-400 font-medium">價格小數位</label>
               <div className="flex items-center bg-slate-950 px-2 py-1.5 rounded-lg border border-slate-800 gap-1.5" title="調整入場價格、計算價格、均價與強平價格的小數位數">
                 <input 
@@ -1876,7 +1856,7 @@ export default function App() {
             </div>
 
             {/* 累計漲跌幅 */}
-            <div className="md:col-span-2 bg-[#1e1420]/80 border border-rose-900/40 rounded-xl px-4 py-2 text-right shadow-inner glow-border-rose animate-pulse-glow">
+            <div className="bg-[#1e1420]/80 border border-rose-900/40 rounded-xl px-4 py-2 text-right shadow-inner glow-border-rose animate-pulse-glow">
               <div className="text-[10px] text-rose-400 font-medium">策略總回報 (ROI)</div>
               <div className={`text-lg font-bold font-mono ${totalNetProfit >= 0 ? 'text-emerald-400' : 'text-rose-500'}`} id="roi-value">
                 {totalNetProfit >= 0 ? '+' : ''}{roundTo(finalReturnPercent, 2)}%
@@ -2692,6 +2672,7 @@ export default function App() {
       <div className="max-w-7xl mx-auto mt-12 text-center text-slate-600 text-xs border-t border-slate-900 pt-6" id="footer-copyright">
         加密貨幣滾倉計算機 © 2026 • 專業金融工具與走勢複利模擬系統
       </div>
+    </div> {/* Close main-content-container */}
 
     {/* 儲存/修改設定組合彈出視窗 */}
     <AnimatePresence>
