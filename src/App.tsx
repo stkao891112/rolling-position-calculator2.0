@@ -158,6 +158,8 @@ export default function App() {
       // 1. Process any pending deleted IDs stored in localStorage
       const deletedIdsStr = localStorage.getItem('deleted_rolling_strategy_ids');
       const deletedIds: string[] = deletedIdsStr ? JSON.parse(deletedIdsStr) : [];
+      
+      // First, delete all pending deleted IDs from Firestore
       if (deletedIds.length > 0) {
         for (const dId of deletedIds) {
           try {
@@ -168,7 +170,7 @@ export default function App() {
         }
       }
 
-      // 2. Fetch cloud strategies
+      // 2. Fetch cloud strategies (after deleting pending items)
       const cloudStrats = await getUserStrategies(currentUser.uid);
 
       // 3. Fetch local strategies & last sync timestamp
@@ -180,15 +182,17 @@ export default function App() {
 
       const mergedMap = new Map<string, SavedStrategy>();
 
-      // Populate cloud strategies first
+      // Populate cloud strategies first, EXCLUDING any that are in deletedIds
       cloudStrats.forEach(s => {
-        mergedMap.set(s.id, s);
+        if (!deletedIds.includes(s.id)) {
+          mergedMap.set(s.id, s);
+        }
       });
 
       // Merge local strategies
       localStrats.forEach((localStrat: SavedStrategy) => {
         if (deletedIds.includes(localStrat.id)) {
-          mergedMap.delete(localStrat.id);
+          // Skip local strategies that are marked as deleted
           return;
         }
 
