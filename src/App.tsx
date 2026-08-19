@@ -402,29 +402,31 @@ export default function App() {
     const curCustomExchangeName = overrideCustomExchangeName !== undefined ? overrideCustomExchangeName : customExchangeName;
 
     const normalizedParams = {
-      initialCapital: Number(rawParams.initialCapital || 0),
-      initialPrice: Number(rawParams.initialPrice || 0),
-      initialLeverage: Number(rawParams.initialLeverage || 0),
-      addPositionInterval: Number(rawParams.addPositionInterval || 0),
-      feeRate: Number(rawParams.feeRate || 0),
-      finalExitPrice: Number(rawParams.finalExitPrice || 0),
+      initialCapital: rawParams.initialCapital != null ? Number(rawParams.initialCapital) : 650,
+      initialPrice: rawParams.initialPrice != null ? Number(rawParams.initialPrice) : 0,
+      initialLeverage: rawParams.initialLeverage != null ? Number(rawParams.initialLeverage) : 10,
+      addPositionInterval: rawParams.addPositionInterval != null ? Number(rawParams.addPositionInterval) : 3,
+      feeRate: rawParams.feeRate != null ? Number(rawParams.feeRate) : 0.02,
+      finalExitPrice: rawParams.finalExitPrice != null ? Number(rawParams.finalExitPrice) : 0,
       direction: rawParams.direction || TradeDirection.SHORT,
-      maintenanceMargin: Number(rawParams.maintenanceMargin || 0),
+      maintenanceMargin: rawParams.maintenanceMargin != null ? Number(rawParams.maintenanceMargin) : 0.5,
       deductFeeFromNetProfit: rawParams.deductFeeFromNetProfit ?? true,
       deductFeeFromPositionSizing: rawParams.deductFeeFromPositionSizing ?? false,
+      contractType: curContractType || ContractType.USDT_MARGINED,
+      exchange: rawParams.exchange || curSelectedExchange || 'Binance',
     };
 
     const normalizedLevels = (rawLevels || []).map((lvl: any, idx: number) => ({
       id: String(lvl.id),
-      entryPrice: lvl.entryPrice !== undefined ? Number(lvl.entryPrice) : undefined,
+      entryPrice: lvl.entryPrice != null ? Number(lvl.entryPrice) : undefined,
       isCustomEntryPrice: !!lvl.isCustomEntryPrice,
-      calcPrice: lvl.calcPrice !== undefined ? Number(lvl.calcPrice) : undefined,
+      calcPrice: lvl.calcPrice != null ? Number(lvl.calcPrice) : undefined,
       isCustomCalcPrice: !!lvl.isCustomCalcPrice,
-      leverage: lvl.leverage !== undefined ? Number(lvl.leverage) : undefined,
+      leverage: lvl.leverage != null ? Number(lvl.leverage) : undefined,
       isCustomLeverage: !!lvl.isCustomLeverage,
-      capital: lvl.capital !== undefined ? Number(lvl.capital) : undefined,
+      capital: lvl.capital != null ? Number(lvl.capital) : undefined,
       isCustomCapital: !!lvl.isCustomCapital,
-      thisRoundPositionSize: lvl.thisRoundPositionSize !== undefined ? Number(lvl.thisRoundPositionSize) : undefined,
+      thisRoundPositionSize: lvl.thisRoundPositionSize != null ? Number(lvl.thisRoundPositionSize) : undefined,
       isCustomThisRoundPositionSize: !!lvl.isCustomThisRoundPositionSize,
       note: lvl.note || '',
       isActive: idx === currentActiveIdx,
@@ -701,38 +703,52 @@ export default function App() {
   };
 
   const handleLoadStrategy = (strategy: SavedStrategy) => {
-    setRollingMode(strategy.rollingMode);
-    setReinvestMode(strategy.reinvestMode);
-    setCustomMultiplier(strategy.customMultiplier);
-    setSelectedPreset(strategy.selectedPreset);
-    setCustomCurrencyName(strategy.customCurrencyName);
-    setQtyDecimals(strategy.qtyDecimals);
-    setPriceDecimals(strategy.priceDecimals);
-    setContractType(strategy.contractType || ContractType.USDT_MARGINED);
     const ex = strategy.exchange || strategy.strategyParams?.exchange || 'Binance';
-    if (PRESET_EXCHANGES.includes(ex)) {
-      setSelectedExchange(ex);
-    } else {
-      setSelectedExchange('CUSTOM');
-      setCustomExchangeName(ex);
-    }
-    const deductNet = strategy.deductFeeFromNetProfit ?? strategy.strategyParams.deductFeeFromNetProfit ?? true;
-    const deductPos = strategy.deductFeeFromPositionSizing ?? strategy.strategyParams.deductFeeFromPositionSizing ?? false;
+    const isPresetEx = PRESET_EXCHANGES.includes(ex);
+    const selEx = isPresetEx ? ex : 'CUSTOM';
+    const custEx = isPresetEx ? '' : ex;
+    const cType = strategy.contractType || ContractType.USDT_MARGINED;
+    const deductNet = strategy.deductFeeFromNetProfit ?? strategy.strategyParams?.deductFeeFromNetProfit ?? true;
+    const deductPos = strategy.deductFeeFromPositionSizing ?? strategy.strategyParams?.deductFeeFromPositionSizing ?? false;
+    const selPreset = strategy.selectedPreset || strategy.customCurrencyName || 'BTC';
+    const currName = strategy.customCurrencyName || 'BTC';
+
     const loadedParams = {
-      ...strategy.strategyParams,
+      initialCapital: strategy.strategyParams?.initialCapital ?? 650,
+      initialPrice: strategy.strategyParams?.initialPrice ?? 0,
+      initialLeverage: strategy.strategyParams?.initialLeverage ?? 10,
+      addPositionInterval: strategy.strategyParams?.addPositionInterval ?? 3,
+      feeRate: strategy.strategyParams?.feeRate ?? 0.02,
+      finalExitPrice: strategy.strategyParams?.finalExitPrice ?? 0,
+      direction: strategy.strategyParams?.direction || TradeDirection.SHORT,
+      maintenanceMargin: strategy.strategyParams?.maintenanceMargin ?? 0.5,
       deductFeeFromNetProfit: deductNet,
       deductFeeFromPositionSizing: deductPos,
+      contractType: cType,
+      exchange: ex,
     };
+
     let loadedActiveIdx: number | null = null;
     if (strategy.activeLevelIndex !== undefined) {
       loadedActiveIdx = strategy.activeLevelIndex;
     } else {
-      const activeIdx = strategy.levelsState.findIndex(l => l.isActive);
+      const activeIdx = (strategy.levelsState || []).findIndex((l: any) => l.isActive);
       loadedActiveIdx = activeIdx !== -1 ? activeIdx : null;
     }
+
+    setRollingMode(strategy.rollingMode || RollingMode.DOUBLE);
+    setReinvestMode(strategy.reinvestMode || CapitalReinvestMode.PROFIT_REINVEST);
+    setCustomMultiplier(strategy.customMultiplier || 1.5);
+    setSelectedPreset(selPreset);
+    setCustomCurrencyName(currName);
+    setQtyDecimals(strategy.qtyDecimals ?? 2);
+    setPriceDecimals(strategy.priceDecimals ?? 0);
+    setContractType(cType);
+    setSelectedExchange(selEx);
+    setCustomExchangeName(custEx);
     setStrategyParams(loadedParams);
     setActiveLevelIndex(loadedActiveIdx);
-    setLevelsState(strategy.levelsState);
+    setLevelsState(strategy.levelsState || []);
     setCurrentSavedId(strategy.id);
 
     // Update saved snapshot using getCurrentStateSnapshot with ALL loaded parameter overrides
@@ -740,16 +756,16 @@ export default function App() {
       loadedParams,
       strategy.levelsState,
       loadedActiveIdx,
-      strategy.rollingMode,
-      strategy.reinvestMode,
-      strategy.customMultiplier,
-      strategy.selectedPreset || strategy.customCurrencyName,
-      strategy.customCurrencyName,
-      strategy.qtyDecimals,
-      strategy.priceDecimals,
-      strategy.contractType || ContractType.USDT_MARGINED,
-      PRESET_EXCHANGES.includes(ex) ? ex : 'CUSTOM',
-      PRESET_EXCHANGES.includes(ex) ? '' : ex
+      strategy.rollingMode || RollingMode.DOUBLE,
+      strategy.reinvestMode || CapitalReinvestMode.PROFIT_REINVEST,
+      strategy.customMultiplier || 1.5,
+      selPreset,
+      currName,
+      strategy.qtyDecimals ?? 2,
+      strategy.priceDecimals ?? 0,
+      cType,
+      selEx,
+      custEx
     );
     setLastSavedSnapshot(snap);
   };
