@@ -371,39 +371,88 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 2500);
   };
 
-  // Helper to build current state snapshot string
-  const getCurrentStateSnapshot = (overrideParams?: any, overrideLevels?: any, overrideActiveIdx?: number | null) => {
+  // Helper to build current state snapshot string with full normalization and optional overrides
+  const getCurrentStateSnapshot = (
+    overrideParams?: any, 
+    overrideLevels?: any, 
+    overrideActiveIdx?: number | null,
+    overrideRollingMode?: RollingMode,
+    overrideReinvestMode?: CapitalReinvestMode,
+    overrideCustomMultiplier?: number,
+    overrideSelectedPreset?: string,
+    overrideCustomCurrencyName?: string,
+    overrideQtyDecimals?: number,
+    overridePriceDecimals?: number,
+    overrideContractType?: ContractType,
+    overrideSelectedExchange?: string,
+    overrideCustomExchangeName?: string
+  ) => {
     const rawParams = overrideParams || strategyParams;
     const rawLevels = overrideLevels || levelsState;
     const currentActiveIdx = overrideActiveIdx !== undefined ? overrideActiveIdx : activeLevelIndex;
+    const curRollingMode = overrideRollingMode !== undefined ? overrideRollingMode : rollingMode;
+    const curReinvestMode = overrideReinvestMode !== undefined ? overrideReinvestMode : reinvestMode;
+    const curCustomMultiplier = overrideCustomMultiplier !== undefined ? overrideCustomMultiplier : customMultiplier;
+    const curSelectedPreset = overrideSelectedPreset !== undefined ? overrideSelectedPreset : selectedPreset;
+    const curCustomCurrencyName = overrideCustomCurrencyName !== undefined ? overrideCustomCurrencyName : customCurrencyName;
+    const curQtyDecimals = overrideQtyDecimals !== undefined ? overrideQtyDecimals : qtyDecimals;
+    const curPriceDecimals = overridePriceDecimals !== undefined ? overridePriceDecimals : priceDecimals;
+    const curContractType = overrideContractType !== undefined ? overrideContractType : contractType;
+    const curSelectedExchange = overrideSelectedExchange !== undefined ? overrideSelectedExchange : selectedExchange;
+    const curCustomExchangeName = overrideCustomExchangeName !== undefined ? overrideCustomExchangeName : customExchangeName;
 
     const normalizedParams = {
-      ...rawParams,
+      initialCapital: Number(rawParams.initialCapital || 0),
+      initialPrice: Number(rawParams.initialPrice || 0),
+      initialLeverage: Number(rawParams.initialLeverage || 0),
+      addPositionInterval: Number(rawParams.addPositionInterval || 0),
+      feeRate: Number(rawParams.feeRate || 0),
+      finalExitPrice: Number(rawParams.finalExitPrice || 0),
+      direction: rawParams.direction || TradeDirection.SHORT,
+      maintenanceMargin: Number(rawParams.maintenanceMargin || 0),
       deductFeeFromNetProfit: rawParams.deductFeeFromNetProfit ?? true,
       deductFeeFromPositionSizing: rawParams.deductFeeFromPositionSizing ?? false,
     };
 
-    const normalizedLevels = rawLevels.map((lvl: any, idx: number) => ({
-      ...lvl,
+    const normalizedLevels = (rawLevels || []).map((lvl: any, idx: number) => ({
+      id: String(lvl.id),
+      entryPrice: lvl.entryPrice !== undefined ? Number(lvl.entryPrice) : undefined,
+      isCustomEntryPrice: !!lvl.isCustomEntryPrice,
+      calcPrice: lvl.calcPrice !== undefined ? Number(lvl.calcPrice) : undefined,
+      isCustomCalcPrice: !!lvl.isCustomCalcPrice,
+      leverage: lvl.leverage !== undefined ? Number(lvl.leverage) : undefined,
+      isCustomLeverage: !!lvl.isCustomLeverage,
+      capital: lvl.capital !== undefined ? Number(lvl.capital) : undefined,
+      isCustomCapital: !!lvl.isCustomCapital,
+      thisRoundPositionSize: lvl.thisRoundPositionSize !== undefined ? Number(lvl.thisRoundPositionSize) : undefined,
+      isCustomThisRoundPositionSize: !!lvl.isCustomThisRoundPositionSize,
+      note: lvl.note || '',
       isActive: idx === currentActiveIdx,
     }));
 
     return JSON.stringify({
       strategyParams: normalizedParams,
       levelsState: normalizedLevels,
-      rollingMode,
-      reinvestMode,
-      customMultiplier,
-      selectedPreset,
-      customCurrencyName,
-      qtyDecimals,
-      priceDecimals,
-      contractType,
-      selectedExchange,
-      customExchangeName,
+      rollingMode: curRollingMode || RollingMode.DOUBLE,
+      reinvestMode: curReinvestMode || CapitalReinvestMode.PROFIT_REINVEST,
+      customMultiplier: Number(curCustomMultiplier || 1),
+      selectedPreset: curSelectedPreset || 'BTC',
+      customCurrencyName: curCustomCurrencyName || 'BTC',
+      qtyDecimals: Number(curQtyDecimals ?? 2),
+      priceDecimals: Number(curPriceDecimals ?? 0),
+      contractType: curContractType || ContractType.USDT_MARGINED,
+      selectedExchange: curSelectedExchange || 'Binance',
+      customExchangeName: curCustomExchangeName || '',
       activeLevelIndex: currentActiveIdx,
     });
   };
+
+  // Ensure initial state has a snapshot set on mount
+  useEffect(() => {
+    if (lastSavedSnapshot === null) {
+      setLastSavedSnapshot(getCurrentStateSnapshot());
+    }
+  }, []);
 
   // Check if current state has unsaved changes before executing an action
   const checkUnsavedBeforeAction = (action: () => void, pendingObj: any) => {
@@ -416,7 +465,28 @@ export default function App() {
   };
 
   const handleToggleActiveLevel = (index: number) => {
-    setActiveLevelIndex(prev => (prev === index ? null : index));
+    setActiveLevelIndex(prev => {
+      const newIdx = prev === index ? null : index;
+      if (currentSavedId) {
+        const updated = savedStrategies.map(strat => {
+          if (strat.id === currentSavedId) {
+            return {
+              ...strat,
+              activeLevelIndex: newIdx,
+              levelsState: strat.levelsState.map((l, i) => ({
+                ...l,
+                isActive: i === newIdx,
+              })),
+            };
+          }
+          return strat;
+        });
+        setSavedStrategies(updated);
+        localStorage.setItem('saved_rolling_strategies', JSON.stringify(updated));
+        setLastSavedSnapshot(getCurrentStateSnapshot(undefined, undefined, newIdx));
+      }
+      return newIdx;
+    });
   };
 
   const handleUpdateLevelNote = (index: number, noteText: string) => {
@@ -578,11 +648,13 @@ export default function App() {
   const handleExchangeChange = async (newExchange: string, customName?: string) => {
     setSelectedExchange(newExchange);
     const effectiveExchange = newExchange === 'CUSTOM' ? ((customName !== undefined ? customName : customExchangeName).trim() || '自訂交易所') : newExchange;
-    
-    setStrategyParams(prev => ({
-      ...prev,
+    const custExchangeName = newExchange === 'CUSTOM' ? (customName !== undefined ? customName : customExchangeName) : '';
+
+    const updatedParams = {
+      ...strategyParams,
       exchange: effectiveExchange,
-    }));
+    };
+    setStrategyParams(updatedParams);
 
     if (currentSavedId) {
       const updatedStrategies = savedStrategies.map(strat => {
@@ -600,6 +672,21 @@ export default function App() {
       });
       setSavedStrategies(updatedStrategies);
       localStorage.setItem('saved_rolling_strategies', JSON.stringify(updatedStrategies));
+      setLastSavedSnapshot(getCurrentStateSnapshot(
+        updatedParams,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        newExchange,
+        custExchangeName
+      ));
 
       if (user) {
         setSyncStatus('syncing');
@@ -648,22 +735,22 @@ export default function App() {
     setLevelsState(strategy.levelsState);
     setCurrentSavedId(strategy.id);
 
-    // Update saved snapshot
-    const snap = JSON.stringify({
-      strategyParams: loadedParams,
-      levelsState: strategy.levelsState,
-      rollingMode: strategy.rollingMode,
-      reinvestMode: strategy.reinvestMode,
-      customMultiplier: strategy.customMultiplier,
-      selectedPreset: strategy.selectedPreset,
-      customCurrencyName: strategy.customCurrencyName,
-      qtyDecimals: strategy.qtyDecimals,
-      priceDecimals: strategy.priceDecimals,
-      contractType: strategy.contractType || ContractType.USDT_MARGINED,
-      selectedExchange: PRESET_EXCHANGES.includes(ex) ? ex : 'CUSTOM',
-      customExchangeName: PRESET_EXCHANGES.includes(ex) ? '' : ex,
-      activeLevelIndex: loadedActiveIdx,
-    });
+    // Update saved snapshot using getCurrentStateSnapshot with ALL loaded parameter overrides
+    const snap = getCurrentStateSnapshot(
+      loadedParams,
+      strategy.levelsState,
+      loadedActiveIdx,
+      strategy.rollingMode,
+      strategy.reinvestMode,
+      strategy.customMultiplier,
+      strategy.selectedPreset || strategy.customCurrencyName,
+      strategy.customCurrencyName,
+      strategy.qtyDecimals,
+      strategy.priceDecimals,
+      strategy.contractType || ContractType.USDT_MARGINED,
+      PRESET_EXCHANGES.includes(ex) ? ex : 'CUSTOM',
+      PRESET_EXCHANGES.includes(ex) ? '' : ex
+    );
     setLastSavedSnapshot(snap);
   };
 
@@ -1088,22 +1175,22 @@ export default function App() {
     setLevelsState(defaultLevels);
     setCurrentSavedId(null);
 
-    // Reset snapshot to initial defaults
-    const snap = JSON.stringify({
-      strategyParams: defaultParams,
-      levelsState: defaultLevels,
-      rollingMode: RollingMode.DOUBLE,
-      reinvestMode: CapitalReinvestMode.PROFIT_REINVEST,
-      customMultiplier: 1.5,
-      selectedPreset: 'BTC',
-      customCurrencyName: 'BTC',
-      qtyDecimals: btc.defaultDecimals,
-      priceDecimals: btc.defaultPriceDecimals ?? 1,
-      contractType: ContractType.USDT_MARGINED,
-      selectedExchange: 'Binance',
-      customExchangeName: '',
-      activeLevelIndex: null,
-    });
+    // Reset snapshot to initial defaults using getCurrentStateSnapshot with overrides
+    const snap = getCurrentStateSnapshot(
+      defaultParams,
+      defaultLevels,
+      null,
+      RollingMode.DOUBLE,
+      CapitalReinvestMode.PROFIT_REINVEST,
+      1.5,
+      'BTC',
+      'BTC',
+      btc.defaultDecimals,
+      btc.defaultPriceDecimals ?? 1,
+      ContractType.USDT_MARGINED,
+      'Binance',
+      ''
+    );
     setLastSavedSnapshot(snap);
   };
 
