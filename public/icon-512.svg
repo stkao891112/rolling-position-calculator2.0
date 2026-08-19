@@ -1,6 +1,74 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#030712"/>
-  <circle cx="96" cy="96" r="160" fill="none" stroke="#6366f1" stroke-width="20"/>
-  <path d="M96 56 L96 96 L120 96" fill="none" stroke="#6366f1" stroke-width="20" stroke-linecap="round"/>
-  <text x="96" y="140" text-anchor="middle" fill="#6366f1" font-size="60" font-weight="bold">$</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0f24"/>
+      <stop offset="50%" stop-color="#030712"/>
+      <stop offset="100%" stop-color="#060b19"/>
+    </linearGradient>
+
+    <!-- Border Glow Gradient -->
+    <linearGradient id="border-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+
+    <!-- Upward Trend Arrow Gradient -->
+    <linearGradient id="trend-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="50%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+
+    <!-- Coin Gold Gradient -->
+    <linearGradient id="coin-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+
+    <!-- Glow Filter -->
+    <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Base Card Background -->
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#bg-grad)" stroke="url(#border-grad)" stroke-width="8"/>
+
+  <!-- Cascading Rolling Position Pyramids (Layer 1, 2, 3) -->
+  <g opacity="0.85">
+    <!-- Bottom Layer Bar -->
+    <rect x="96" y="340" width="160" height="36" rx="10" fill="#1e293b" stroke="#334155" stroke-width="4"/>
+    <!-- Middle Layer Bar -->
+    <rect x="96" y="280" width="220" height="36" rx="10" fill="#1e1b4b" stroke="#4338ca" stroke-width="4"/>
+    <!-- Top Layer Bar -->
+    <rect x="96" y="220" width="280" height="36" rx="10" fill="#064e3b" stroke="#047857" stroke-width="4"/>
+  </g>
+
+  <!-- Upward Compound Growth Line with Glowing Arrow -->
+  <path d="M 80 390 L 190 310 L 290 270 L 410 130" 
+        fill="none" 
+        stroke="url(#trend-grad)" 
+        stroke-width="24" 
+        stroke-linecap="round" 
+        stroke-linejoin="round" 
+        filter="url(#neon-glow)"/>
+
+  <!-- Arrow Head -->
+  <path d="M 330 130 L 410 130 L 410 210" 
+        fill="none" 
+        stroke="url(#trend-grad)" 
+        stroke-width="24" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"
+        filter="url(#neon-glow)"/>
+
+  <!-- Crypto Coin Badge (Floating Top Left) -->
+  <g filter="url(#neon-glow)">
+    <circle cx="160" cy="160" r="44" fill="url(#coin-grad)" stroke="#fef08a" stroke-width="6"/>
+    <!-- Coin $ Symbol -->
+    <text x="160" y="177" font-family="sans-serif" font-size="48" font-weight="900" text-anchor="middle" fill="#78350f">$</text>
+  </g>
 </svg>
