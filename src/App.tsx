@@ -2027,8 +2027,23 @@ export default function App() {
               <div className="relative">
                 <input 
                   type="number" 
+                  min="1"
+                  step="1"
                   value={strategyParams.initialLeverage} 
                   onChange={(e) => setStrategyParams(p => ({ ...p, initialLeverage: Math.max(1, parseFloat(e.target.value) || 1) }))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowUp') {
+                      e.preventDefault();
+                      const currentVal = strategyParams.initialLeverage || 1;
+                      const nextVal = Math.floor(currentVal) + 1;
+                      setStrategyParams(p => ({ ...p, initialLeverage: nextVal }));
+                    } else if (e.key === 'ArrowDown') {
+                      e.preventDefault();
+                      const currentVal = strategyParams.initialLeverage || 1;
+                      const prevVal = Math.ceil(currentVal) - 1;
+                      setStrategyParams(p => ({ ...p, initialLeverage: Math.max(1, prevVal) }));
+                    }
+                  }}
                   className="w-full bg-slate-950/80 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-100 font-mono focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   placeholder="10"
                   id="input-initial-leverage"
@@ -2496,10 +2511,27 @@ export default function App() {
                           <div className="inline-flex items-center gap-1.5">
                             <input 
                               type="number"
-                              min="0.01"
-                              step="0.01"
+                              min="1"
+                              step="1"
                               value={level.isDerivedLeverageFromPositionSize ? level.leverage : displayLeverage}
                               onChange={(e) => handleUpdateLevel(idx, 'leverage', e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'ArrowUp') {
+                                  e.preventDefault();
+                                  const currentVal = level.isDerivedLeverageFromPositionSize 
+                                    ? level.leverage 
+                                    : (typeof displayLeverage === 'number' ? displayLeverage : (parseFloat(displayLeverage as string) || 1));
+                                  const nextVal = Math.floor(currentVal) + 1;
+                                  handleUpdateLevel(idx, 'leverage', nextVal.toString());
+                                } else if (e.key === 'ArrowDown') {
+                                  e.preventDefault();
+                                  const currentVal = level.isDerivedLeverageFromPositionSize 
+                                    ? level.leverage 
+                                    : (typeof displayLeverage === 'number' ? displayLeverage : (parseFloat(displayLeverage as string) || 1));
+                                  const prevVal = Math.ceil(currentVal) - 1;
+                                  handleUpdateLevel(idx, 'leverage', Math.max(1, prevVal).toString());
+                                }
+                              }}
                               className={`bg-slate-950 border rounded px-2 py-1 text-xs text-center w-full min-w-[4rem] focus:outline-none focus:ring-1 focus:ring-indigo-500 font-mono transition-colors duration-200 ${
                                 level.isDerivedLeverageFromPositionSize
                                   ? 'border-amber-500/60 bg-amber-500/10 text-amber-300 font-bold'
@@ -3184,6 +3216,7 @@ export default function App() {
                     type="number"
                     min="1"
                     max="125"
+                    step="1"
                     value={maxLeverage}
                     onChange={(e) => setMaxLeverage(Math.max(1, parseInt(e.target.value) || 1))}
                     className="w-16 bg-transparent text-sm font-bold text-indigo-400 text-center font-mono focus:outline-none"
